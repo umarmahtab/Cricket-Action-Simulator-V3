@@ -22,7 +22,7 @@ Build your dream squad • Outbid your rivals • Manage your purse • Dominate
 > Looking for the previous version?
 >
 > **Legacy Repository (V1):**
-> https://github.com/umarmahtab/YOUR-OLD-REPOSITORY
+> https://github.com/umarmahtab/Cricket-Auction-Simulator-V2
 >
 > This version includes a redesigned interface, improved auction flow, enhanced performance, better team management, new customization options, and numerous quality-of-life improvements over the original release.
 
