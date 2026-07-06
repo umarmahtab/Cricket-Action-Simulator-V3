@@ -1,0 +1,2235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Auction Simulator By Umar</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- PDF Generation Libraries -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.31/jspdf.plugin.autotable.min.js"></script>
+    
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        @keyframes gradientBG {
+            0% { background-position: 0% 30%; }
+            30% { background-position: 100% 30%; }
+            100% { background-position: 0% 30%; }
+        }
+        @keyframes flashGreen {
+            0% { background-color: rgba(163, 230, 53, 0.5); }
+            100% { background-color: transparent; }
+        }
+        /* --- ANIMATIONS FOR STAMP --- */
+        @keyframes stamp-in {
+            0% { opacity: 0; transform: translate(-30%, -30%) scale(3) rotate(-15deg); }
+            30% { opacity: 1; transform: translate(-30%, -30%) scale(1) rotate(-2deg); }
+            70% { transform: translate(-30%, -30%) scale(1.1) rotate(-2deg); }
+            100% { transform: translate(-30%, -30%) scale(1) rotate(-5deg); }
+        }
+        .sold-stamp {
+            position: absolute;
+            top: 30%;
+            left: 30%;
+            transform: translate(-30%, -30%) rotate(-5deg);
+            z-index: 30;
+            border: 8px solid #ef4444;
+            color: #ef4444;
+            padding: 1rem 2rem;
+            font-size: 4rem;
+            font-weight: 900;
+            text-transform: uppercase;
+            letter-spacing: 0.5rem;
+            border-radius: 10px;
+            opacity: 0;
+            pointer-events: none;
+            text-shadow: 0 0 15px rgba(239, 68, 68, 0.5);
+            background: rgba(0,0,0,0.2);
+            backdrop-filter: blur(2px);
+            white-space: nowrap;
+        }
+        .sold-stamp.animate {
+            animation: stamp-in 0.4s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+        }
+        /* -------------------------------- */
+        
+        /* Pause/Resume Button (color only) */
+        
+        /* Bid Button Click Animation */
+        @keyframes bidClick {
+            0% { transform: scale(1); }
+            50% { transform: scale(0.95); }
+            100% { transform: scale(1.05); }
+        }
+        .bid-clicked {
+            animation: bidClick 0.3s ease-out;
+        }
+
+        .flash-row {
+            animation: flashGreen 2s ease-out;
+        }
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e);
+            background-size: 300% 300%;
+            animation: gradientBG 15s ease infinite;
+        }
+        /* --- THEME OVERRIDES --- */
+        body.theme-fuchsia {
+            background: linear-gradient(-45deg, #0f0c29, #302b63, #24243e);
+        }
+        body.theme-ocean {
+            background: linear-gradient(-45deg, #0b1f3a, #0f4c75, #1b6ca8);
+        }
+        body.theme-emerald {
+            background: linear-gradient(-45deg, #052e2b, #0f766e, #134e4a);
+        }
+        body.theme-sunset {
+            background: linear-gradient(-45deg, #3b0a0a, #7c2d12, #b45309);
+        }
+        body.theme-midnight {
+            background: linear-gradient(-45deg, #0b1026, #1e1b4b, #312e81);
+        }
+
+        /* Accent mapping for themes */
+        body.theme-ocean .bg-fuchsia-600 { background-color: #0ea5e9 !important; }
+        body.theme-ocean .bg-fuchsia-700 { background-color: #0284c7 !important; }
+        body.theme-ocean .hover\:bg-fuchsia-500:hover { background-color: #38bdf8 !important; }
+        body.theme-ocean .text-fuchsia-300 { color: #7dd3fc !important; }
+        body.theme-ocean .text-fuchsia-200 { color: #bae6fd !important; }
+        body.theme-ocean .border-fuchsia-500 { border-color: #38bdf8 !important; }
+        body.theme-ocean .border-fuchsia-300 { border-color: #7dd3fc !important; }
+        body.theme-ocean .accent-fuchsia-500 { accent-color: #38bdf8 !important; }
+
+        body.theme-emerald .bg-fuchsia-600 { background-color: #10b981 !important; }
+        body.theme-emerald .bg-fuchsia-700 { background-color: #059669 !important; }
+        body.theme-emerald .hover\:bg-fuchsia-500:hover { background-color: #34d399 !important; }
+        body.theme-emerald .text-fuchsia-300 { color: #6ee7b7 !important; }
+        body.theme-emerald .text-fuchsia-200 { color: #a7f3d0 !important; }
+        body.theme-emerald .border-fuchsia-500 { border-color: #34d399 !important; }
+        body.theme-emerald .border-fuchsia-300 { border-color: #6ee7b7 !important; }
+        body.theme-emerald .accent-fuchsia-500 { accent-color: #34d399 !important; }
+
+        body.theme-sunset .bg-fuchsia-600 { background-color: #f97316 !important; }
+        body.theme-sunset .bg-fuchsia-700 { background-color: #ea580c !important; }
+        body.theme-sunset .hover\:bg-fuchsia-500:hover { background-color: #fb923c !important; }
+        body.theme-sunset .text-fuchsia-300 { color: #fdba74 !important; }
+        body.theme-sunset .text-fuchsia-200 { color: #fed7aa !important; }
+        body.theme-sunset .border-fuchsia-500 { border-color: #fb923c !important; }
+        body.theme-sunset .border-fuchsia-300 { border-color: #fdba74 !important; }
+        body.theme-sunset .accent-fuchsia-500 { accent-color: #fb923c !important; }
+
+        body.theme-midnight .bg-fuchsia-600 { background-color: #6366f1 !important; }
+        body.theme-midnight .bg-fuchsia-700 { background-color: #4f46e5 !important; }
+        body.theme-midnight .hover\:bg-fuchsia-500:hover { background-color: #818cf8 !important; }
+        body.theme-midnight .text-fuchsia-300 { color: #a5b4fc !important; }
+        body.theme-midnight .text-fuchsia-200 { color: #c7d2fe !important; }
+        body.theme-midnight .border-fuchsia-500 { border-color: #818cf8 !important; }
+        body.theme-midnight .border-fuchsia-300 { border-color: #a5b4fc !important; }
+        body.theme-midnight .accent-fuchsia-500 { accent-color: #818cf8 !important; }
+        #app {
+            position: relative;
+            z-index: 1;
+        }
+        .timer-ring-container {
+            position: relative;
+            width: 120px;
+            height: 120px;
+        }
+        .timer-ring {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            fill: none;
+            stroke-width: 8;
+            stroke-linecap: round;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dashoffset 1s linear;
+        }
+        .timer-ring-bg { stroke: #374151; }
+        .timer-ring-fg { stroke: #c026d3; }
+        .team-card { transition: all 0.3s ease-in-out; }
+        .highest-bidder-team-card {
+            transform: scale(1.02);
+            box-shadow: 0 0 25px rgba(192, 38, 211, 0.7);
+            border: 1px solid #d946ef;
+        }
+        .glass-effect {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        .modal-backdrop {
+            background-color: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(5px);
+        }
+        .player-retainable.selected {
+            background-color: #a21caf;
+            border-color: #c026d3;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar { width: 8px; }
+        ::-webkit-scrollbar-track { background: #1f2937; }
+        ::-webkit-scrollbar-thumb { background: #4b5563; border-radius: 4px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b7280; }
+    </style>
+</head>
+<body class="bg-gray-900 text-white min-h-screen p-4 flex flex-col items-center">
+
+    <!-- Audio Elements -->
+    <audio id="audio-bid" src="sounds/bid.wav"></audio>
+    <audio id="audio-team1" src="sounds/team1.wav"></audio>
+    <audio id="audio-team2" src="sounds/team2.wav"></audio>
+    <audio id="audio-team3" src="sounds/team3.wav"></audio>
+    <audio id="audio-team4" src="sounds/team4.wav"></audio>
+    <audio id="audio-unsold" src="sounds/unsold.wav"></audio>
+    <audio id="audio-crowd" src="sounds/crowd-loop.mp3" loop></audio>
+    <audio id="audio-tension" src="sounds/tension.wav" loop></audio>
+
+    <!-- Top Bar -->
+    <div class="w-full max-w-7xl mx-auto flex justify-between items-center mb-4 glass-effect p-3 rounded-xl z-30 relative">
+        <div class="flex items-center gap-2">
+            <span class="text-2xl"></span>
+            <h1 class="font-bold text-lg md:text-xl tracking-wider">AUCTION SIMULATOR BY UMAR</h1>
+        </div>
+        <div class="flex gap-2">
+            <button id="resetAuctionBtn" class="bg-red-600/80 hover:bg-red-600 text-white text-sm font-bold py-2 px-4 rounded transition">Reset</button>
+            <button id="settingsBtn" class="bg-gray-700 hover:bg-gray-600 text-white p-2 rounded transition" title="Settings">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+            </button>
+        </div>
+    </div>
+
+    <!-- Resume Session Banner -->
+    <div id="resumeBanner" class="hidden fixed bottom-0 left-0 w-full bg-fuchsia-900/95 border-t border-fuchsia-500 p-4 z-30 shadow-2xl flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <svg class="w-6 h-6 text-fuchsia-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+            <div>
+                <p class="font-bold text-white">Previous Session Found</p>
+                <p class="text-xs text-fuchsia-200">Would you like to resume where you left off?</p>
+            </div>
+        </div>
+        <div class="flex gap-3">
+            <button id="dismissResumeBtn" class="text-gray-300 hover:text-white text-sm underline">Dismiss</button>
+            <button id="resumeBtn" class="bg-white text-fuchsia-900 hover:bg-gray-100 font-bold py-2 px-6 rounded shadow transition">Resume Auction</button>
+        </div>
+    </div>
+
+    <div id="app" class="w-full max-w-7xl mx-auto pb-30">
+
+        <!-- Sticky Stats Bar (Visible during auction) -->
+        <div id="stickyStatsBar" class="hidden sticky top-0 z-30 mb-6 glass-effect rounded-lg p-3 border-b border-fuchsia-500/30 shadow-lg">
+            <div class="flex items-center gap-3 text-sm md:text-base mb-2 flex-nowrap overflow-hidden">
+                <span class="text-gray-300">Record:</span>
+                <span id="recordAmount" class="font-bold text-amber-300">₹0 L</span>
+                <span class="text-gray-500">•</span>
+                <span class="text-gray-300">Player:</span>
+                <span id="recordPlayer" class="font-bold text-white truncate max-w-[140px]" title="-">-</span>
+                <span class="text-gray-500">•</span>
+                <span class="text-gray-300">Team:</span>
+                <span id="recordTeam" class="font-bold text-white truncate max-w-[140px]" title="-">-</span>
+            </div>
+            <div class="flex flex-wrap justify-between items-center text-sm md:text-base">
+                <div class="flex items-center space-x-4">
+                    <div class="text-gray-300">Sold: <span id="statSoldPlayers" class="font-bold text-white">0</span>/200</div>
+                    <div class="text-gray-300">Spent: <span id="statTotalSpent" class="font-bold text-green-300">₹0 Cr</span></div>
+                </div>
+                <div class="text-fuchsia-300 font-semibold" id="statCurrentRound">Round: Setup</div>
+            </div>
+        </div>
+
+        <!-- SETUP SCREEN -->
+        <div id="setupScreen" class="text-center glass-effect p-8 rounded-2xl shadow-lg">
+            <h1 class="text-4xl font-bold mb-2 text-fuchsia-300">Assemble Your Franchises</h1>
+            <p class="text-gray-300 mb-8">Customize names. Edit Player Pool. Start the War.</p>
+            
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-10">
+                <!-- Team 1 -->
+                <div class="bg-gray-700/30 p-6 rounded-xl border border-gray-600/30 hover:border-cyan-500 hover:shadow-lg transition">
+                    <div class="flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-cyan-300 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <h2 class="text-xl font-semibold text-white">Team 1</h2>
+                    </div>
+                    <input id="team1Name" type="text" maxlength="20" class="w-full bg-gray-900/70 text-white text-center p-3 rounded-lg border-2 border-gray-600 focus:border-cyan-500 outline-none transition break-words" value="United" style="word-wrap: break-word; overflow-wrap: break-word;">
+                </div>
+                <!-- Team 2 -->
+                <div class="bg-gray-700/30 p-6 rounded-xl border border-gray-600/30 hover:border-orange-500 hover:shadow-lg transition">
+                    <div class="flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-orange-300 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17.657 18.657A8 8 0 016.343 7.343S7 9 9 10c0-2 .5-5 2.986-7C14 5 16.09 5.777 17.656 7.343A7.975 7.975 0 0120 13a7.975 7.975 0 01-2.343 5.657z"></path></svg>
+                        <h2 class="text-xl font-semibold text-white">Team 2</h2>
+                    </div>
+                    <input id="team2Name" type="text" maxlength="20" class="w-full bg-gray-900/70 text-white text-center p-3 rounded-lg border-2 border-gray-600 focus:border-orange-500 outline-none transition break-words" value="Knights" style="word-wrap: break-word; overflow-wrap: break-word;">
+                </div>
+                <!-- Team 3 -->
+                <div class="bg-gray-700/30 p-6 rounded-xl border border-gray-600/30 hover:border-lime-500 hover:shadow-lg transition">
+                    <div class="flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-lime-300 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"></path></svg>
+                        <h2 class="text-xl font-semibold text-white">Team 3</h2>
+                    </div>
+                    <input id="team3Name" type="text" maxlength="20" class="w-full bg-gray-900/70 text-white text-center p-3 rounded-lg border-2 border-gray-600 focus:border-lime-500 outline-none transition break-words" value="Invincibles" style="word-wrap: break-word; overflow-wrap: break-word;">
+                </div>
+                <!-- Team 4 -->
+                <div class="bg-gray-700/30 p-6 rounded-xl border border-gray-600/30 hover:border-rose-500 hover:shadow-lg transition">
+                    <div class="flex items-center justify-center mb-4">
+                        <svg class="w-8 h-8 text-rose-300 mr-3" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
+                        <h2 class="text-xl font-semibold text-white">Team 4</h2>
+                    </div>
+                    <input id="team4Name" type="text" maxlength="20" class="w-full bg-gray-900/70 text-white text-center p-3 rounded-lg border-2 border-gray-600 focus:border-rose-500 outline-none transition break-words" value="Thunders" style="word-wrap: break-word; overflow-wrap: break-word;">
+                </div>
+            </div>
+
+            <div class="flex justify-center gap-4">
+                <button id="managePoolBtn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-4 px-8 rounded-lg text-lg transition duration-300 shadow-lg">Manage Player DB</button>
+                <button id="startAuctionBtn" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold py-4 px-12 rounded-lg text-xl transition duration-300 transform hover:scale-105 shadow-lg shadow-fuchsia-500/30">Start Auction</button>
+            </div>
+        </div>
+
+        <!-- AUCTION SCREEN -->
+        <div id="auctionScreen" class="hidden">
+            <!-- Quick Purse Info Tiles -->
+            <div class="w-full grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+                <div id="purseTeam1Info" class="glass-effect p-3 rounded-lg border border-cyan-500/30 text-center">
+                    <p class="text-xs text-gray-300 uppercase">Team 1</p>
+                    <p class="text-lg font-bold text-cyan-300">₹0 L</p>
+                    <p class="text-xs text-gray-400 mt-1">Players: <span class="text-cyan-300">0</span>/25</p>
+                </div>
+                <div id="purseTeam2Info" class="glass-effect p-3 rounded-lg border border-orange-500/30 text-center">
+                    <p class="text-xs text-gray-300 uppercase">Team 2</p>
+                    <p class="text-lg font-bold text-orange-300">₹0 L</p>
+                    <p class="text-xs text-gray-400 mt-1">Players: <span class="text-orange-300">0</span>/25</p>
+                </div>
+                <div id="purseTeam3Info" class="glass-effect p-3 rounded-lg border border-lime-500/30 text-center">
+                    <p class="text-xs text-gray-300 uppercase">Team 3</p>
+                    <p class="text-lg font-bold text-lime-300">₹0 L</p>
+                    <p class="text-xs text-gray-400 mt-1">Players: <span class="text-lime-300">0</span>/25</p>
+                </div>
+                <div id="purseTeam4Info" class="glass-effect p-3 rounded-lg border border-rose-500/30 text-center">
+                    <p class="text-xs text-gray-300 uppercase">Team 4</p>
+                    <p class="text-lg font-bold text-rose-300">₹0 L</p>
+                    <p class="text-xs text-gray-400 mt-1">Players: <span class="text-rose-300">0</span>/25</p>
+                </div>
+            </div>
+
+            <div class="w-full glass-effect p-4 rounded-2xl shadow-lg mb-8 flex flex-wrap justify-center md:justify-between items-center gap-4">
+                <div class="flex gap-2 flex-wrap">
+                    <button id="showLogBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm">Log</button>
+                    <button id="showRemainingBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm">Remaining</button>
+                    <button id="showUnsoldBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm">Unsold</button>
+                    <button id="showTeamsBtn" class="bg-gray-700 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg transition text-sm">Teams</button>
+                </div>
+                <div class="text-xs text-gray-300 flex gap-2 items-center hidden md:flex">
+                    <span class="bg-gray-800 px-2 py-1 rounded border border-gray-600">1 / 2 / 3 to Bid</span>
+                    <span class="bg-gray-800 px-2 py-1 rounded border border-gray-600">S to Sell</span>
+                    <span class="bg-gray-800 px-2 py-1 rounded border border-gray-600">N for Next</span>
+                    <span class="bg-gray-800 px-2 py-1 rounded border border-gray-600">Space to Pause</span>
+                </div>
+            </div>
+
+            <div class="glass-effect p-6 rounded-2xl shadow-lg mb-8 border border-gray-600/30">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6 items-center">
+                    <!-- Player Card -->
+                    <div id="playerCard" class="text-center order-2 md:order-1 relative">
+                        <!-- SOLD STAMP ANIMATION -->
+                        <div id="soldStamp" class="sold-stamp hidden">SOLD</div>
+                        <!-- END -->
+                        <h2 class="text-xl font-bold text-center mb-4 text-fuchsia-300">Player on Auction</h2>
+                        <div class="p-6 bg-gray-800/80 rounded-2xl border border-gray-600 shadow-inner">
+                            <div class="text-sm bg-fuchsia-600 text-white font-semibold uppercase tracking-wider px-3 py-1 rounded-full inline-block mb-3 shadow" id="playerCategory">Category</div>
+                            <h3 class="text-3xl md:text-4xl font-extrabold truncate" id="playerName">Player Name</h3>
+                            <p class="text-sm text-gray-300 mt-1" id="playerCountry">Country</p>
+                            <div class="mt-4 pt-4 border-t border-gray-700">
+                                <p class="text-gray-300 text-sm uppercase tracking-widest">Base Price</p>
+                                <p class="text-2xl font-bold text-white" id="basePrice">₹0 L</p>
+                            </div>
+                        </div>
+                        <button id="pauseTimerBtn" class="mt-3 bg-gray-800/70 hover:bg-gray-800 text-white font-semibold py-1.5 px-4 rounded-full transition-all text-xs shadow flex items-center gap-2 mx-auto border border-gray-600/60" title="Pause/Resume Auction">
+                            <span class="text-sm">⏸</span>
+                            <span id="pauseBtnText" class="tracking-wide">Pause</span>
+                        </button>
+                    </div>
+                    
+                    <!-- Timer & Bid Status -->
+                    <div class="flex flex-col items-center order-1 md:order-2">
+                         <div class="flex flex-col items-center w-full mb-2">
+                             <div id="timerContainer" class="flex justify-center relative mb-3">
+                                 <div class="timer-ring-container">
+                                     <svg class="w-full h-full">
+                                         <circle class="timer-ring timer-ring-bg" r="56" cx="60" cy="60"></circle>
+                                         <circle id="timerRing" class="timer-ring timer-ring-fg" r="56" cx="60" cy="60"></circle>
+                                     </svg>
+                                     <div id="timer" class="absolute inset-0 flex items-center justify-center text-4xl font-bold text-white drop-shadow-md">40</div>
+                                 </div>
+                             </div>
+                         </div>
+                         <div class="text-center mt-2 w-full">
+                             <p class="text-sm text-gray-300 uppercase tracking-widest">Current Bid</p>
+                             <p id="currentBid" class="text-5xl font-bold text-fuchsia-300 drop-shadow-lg my-2">₹0 L</p>
+                             <div class="bg-gray-800/80 rounded-lg py-2 px-4 inline-block border border-gray-700">
+                                 <p class="text-xs text-gray-300">Highest Bidder</p>
+                                 <p id="highestBidder" class="font-bold text-white text-lg">None</p>
+                             </div>
+                         </div>
+                    </div>
+
+                    <!-- Controls -->
+                      <div class="w-full order-3">
+                        <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-4">
+                            <button id="bidTeam1" data-team="0" class="bid-btn bg-cyan-700 hover:bg-cyan-600 border-b-4 border-cyan-900 text-white font-bold py-3 rounded-xl text-sm transition-all duration-200 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center h-32 leading-tight shadow-2xl hover:shadow-cyan-500/50 hover:scale-110 hover:-translate-y-1"></button>
+                            <button id="bidTeam2" data-team="1" class="bid-btn bg-orange-700 hover:bg-orange-600 border-b-4 border-orange-900 text-white font-bold py-3 rounded-xl text-sm transition-all duration-200 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center h-32 leading-tight shadow-2xl hover:shadow-orange-500/50 hover:scale-110 hover:-translate-y-1"></button>
+                            <button id="bidTeam3" data-team="2" class="bid-btn bg-lime-700 hover:bg-lime-600 border-b-4 border-lime-900 text-white font-bold py-3 rounded-xl text-sm transition-all duration-200 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center h-32 leading-tight shadow-2xl hover:shadow-lime-500/50 hover:scale-110 hover:-translate-y-1"></button>
+                            <button id="bidTeam4" data-team="3" class="bid-btn bg-rose-700 hover:bg-rose-600 border-b-4 border-rose-900 text-white font-bold py-3 rounded-xl text-sm transition-all duration-200 active:border-b-0 active:translate-y-1 flex flex-col items-center justify-center h-32 leading-tight shadow-2xl hover:shadow-rose-500/50 hover:scale-110 hover:-translate-y-1"></button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-3">
+                           <button id="manualSellBtn" class="w-full bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold py-3 px-6 rounded-lg text-lg transition shadow-lg border border-fuchsia-300 opacity-50 cursor-not-allowed" disabled>Sell Player (S)</button>
+                           <button id="unsoldBtn" class="hidden w-full bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-6 rounded-lg text-lg transition col-span-2 border border-gray-500">Mark Unsold</button>
+                           <button id="nextPlayerBtn" class="hidden w-full bg-indigo-600 hover:bg-indigo-500 text-white font-bold py-3 px-6 rounded-lg text-lg transition col-span-2 shadow-lg border border-indigo-300">Next Player (N)</button>
+                        </div>
+                    </div>
+                </div>
+                 <div id="messageBox" class="w-full text-center h-12 mt-2 flex items-center justify-center text-lg font-bold tracking-wide"></div>
+            </div>
+        </div>
+        
+        <!-- END SCREEN -->
+        <div id="endScreen" class="hidden text-center glass-effect p-8 rounded-2xl shadow-lg">
+             <h2 class="text-4xl font-bold text-white mb-6">Auction Completed</h2>
+             <div id="finalSquads" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 text-left"></div>
+             <button onclick="location.reload()" class="mt-8 bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold py-3 px-8 rounded-lg">Start New Auction</button>
+        </div>
+    </div>
+
+    <!-- MODALS -->
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="hidden fixed inset-0 z-30 modal-backdrop flex items-center justify-center p-4">
+        <div class="glass-effect bg-gray-900 w-full max-w-md p-6 rounded-2xl shadow-2xl border border-gray-600 max-h-[90vh] overflow-y-auto">
+            <h2 class="text-2xl font-bold text-white mb-4">Settings</h2>
+            <div class="space-y-4">
+                <div>
+                    <label class="block text-gray-300 text-sm mb-1">Starting Purse (Lakhs)</label>
+                    <input type="number" id="settingPurse" class="w-full bg-gray-800 text-white p-2 rounded border border-gray-600" value="10000">
+                </div>
+                <div id="auctionPurseControls" class="hidden">
+                    <label class="block text-gray-300 text-sm mb-2">Team Purse Management</label>
+                    <div class="space-y-2">
+                        <div class="flex gap-2 items-end">
+                            <div class="flex-1">
+                                <label class="block text-gray-500 text-xs mb-1">Purse Amount (Lakhs)</label>
+                                <input type="number" id="teamPurseAmount" class="w-full bg-gray-800 text-white p-2 rounded border border-gray-600" value="100" min="0">
+                            </div>
+                            <button id="addPurseAllTeamsBtn" class="bg-green-600 hover:bg-green-500 text-white px-3 py-2 rounded font-bold text-sm">Add to All</button>
+                        </div>
+                        <div class="grid grid-cols-2 gap-2">
+                            <button id="addPurseTeam1Btn" class="bg-cyan-700 hover:bg-cyan-600 text-white px-2 py-2 rounded text-sm font-bold">+ Team 1</button>
+                            <button id="addPurseTeam2Btn" class="bg-orange-700 hover:bg-orange-600 text-white px-2 py-2 rounded text-sm font-bold">+ Team 2</button>
+                            <button id="addPurseTeam3Btn" class="bg-lime-700 hover:bg-lime-600 text-white px-2 py-2 rounded text-sm font-bold">+ Team 3</button>
+                            <button id="addPurseTeam4Btn" class="bg-rose-700 hover:bg-rose-600 text-white px-2 py-2 rounded text-sm font-bold">+ Team 4</button>
+                        </div>
+                    </div>
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-sm mb-1">Timer Duration (Seconds): <span id="timerValueDisplay" class="text-white font-bold">40</span></label>
+                    <input type="range" id="settingTimer" min="10" max="120" step="5" value="40" class="w-full accent-fuchsia-500 cursor-pointer">
+                </div>
+                <div>
+                    <label class="block text-gray-300 text-sm mb-1">Theme</label>
+                    <select id="settingTheme" class="w-full bg-gray-800 text-white p-2 rounded border border-gray-600">
+                        <option value="fuchsia">Fuchsia (Default)</option>
+                        <option value="ocean">Ocean Blue</option>
+                        <option value="emerald">Emerald Green</option>
+                        <option value="sunset">Sunset Orange</option>
+                        <option value="midnight">Midnight Indigo</option>
+                    </select>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-white">Enable Retention Phase</span>
+                    <input type="checkbox" id="settingRetention" checked class="w-5 h-5 accent-fuchsia-500">
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-white">Enable Unsold Re-auction</span>
+                    <input type="checkbox" id="settingUnsoldRound" checked class="w-5 h-5 accent-fuchsia-500">
+                </div>
+                
+                <!-- IMPORT/EXPORT SECTION -->
+                <div class="border-t border-gray-700 pt-4 mt-4">
+                    <h3 class="text-lg font-bold text-white mb-3">Data Management</h3>
+                    
+                    <!-- Readable Reports -->
+                    <div class="mb-4">
+                         <h4 class="text-sm text-fuchsia-300 mb-2 font-semibold">Export Reports (Readable)</h4>
+                         <div class="grid grid-cols-2 gap-3">
+                             <button id="exportCsvBtn" class="bg-green-700 hover:bg-green-600 text-white py-2 px-4 rounded flex items-center justify-center gap-2 transition text-sm">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                                 Excel (CSV)
+                             </button>
+                             <button id="exportPdfBtn" class="bg-red-700 hover:bg-red-600 text-white py-2 px-4 rounded flex items-center justify-center gap-2 transition text-sm">
+                                 <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"></path></svg>
+                                 PDF Report
+                             </button>
+                         </div>
+                    </div>
+
+                    <!-- Backup/Restore -->
+                    <div>
+                        <h4 class="text-sm text-gray-300 mb-2 font-semibold">System Backup</h4>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button id="exportDataBtn" class="bg-blue-600 hover:bg-blue-500 text-white py-2 px-4 rounded flex items-center justify-center gap-2 transition text-sm">
+                                Backup (JSON)
+                            </button>
+                            <button id="importDataBtn" class="bg-gray-600 hover:bg-gray-500 text-white py-2 px-4 rounded flex items-center justify-center gap-2 transition text-sm">
+                                Import (JSON)
+                            </button>
+                            <input type="file" id="importFileInput" class="hidden" accept=".json">
+                        </div>
+                    </div>
+                </div>
+                <!-- END IMPORT/EXPORT -->
+
+            </div>
+            <div class="mt-6 flex justify-end gap-3">
+                <button id="closeSettingsBtn" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white px-4 py-2 rounded font-bold">Save & Close</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Pool Modal -->
+    <div id="editPoolModal" class="hidden fixed inset-0 z-30 modal-backdrop flex items-center justify-center p-4">
+        <div class="glass-effect bg-gray-900 w-full max-w-4xl h-[80vh] flex flex-col p-6 rounded-2xl shadow-2xl border border-gray-600">
+            <div class="flex justify-between items-center mb-4">
+                <h2 class="text-2xl font-bold text-white">Edit Player Database</h2>
+                <button id="closeEditPoolBtn" class="text-gray-300 hover:text-white text-2xl">&times;</button>
+            </div>
+            <input type="text" id="editSearch" placeholder="Search player..." class="w-full bg-gray-800 text-white p-3 rounded border border-gray-600 mb-4 focus:border-fuchsia-500 outline-none">
+            
+            <div class="flex-1 overflow-y-auto pr-2" id="editPlayerListContainer">
+                <!-- Player list injected here -->
+            </div>
+
+            <!-- Mini Editor Form (Appears when player clicked) -->
+            <div id="playerEditorForm" class="hidden mt-4 p-4 bg-gray-800 rounded border border-gray-600">
+                <h3 class="text-lg font-bold text-fuchsia-300 mb-2" id="editorPlayerName">Edit Player</h3>
+                <div class="grid grid-cols-2 gap-4">
+                    <div>
+                        <label class="text-xs text-gray-300">Category</label>
+                        <select id="editorCategory" class="w-full bg-gray-700 text-white p-2 rounded border border-gray-600">
+                            <option value="Batsman">Batsman</option>
+                            <option value="Bowler">Bowler</option> 
+                            <option value="Fast Bowler">Fast Bowler</option>
+                            <option value="Spinner">Spinner</option>
+                            <option value="Wicket Keeper">Wicket Keeper</option>
+                            <option value="Allrounder">Allrounder</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="text-xs text-gray-300">Base Price (Lakhs)</label>
+                        <input type="number" id="editorBasePrice" class="w-full bg-gray-700 text-white p-2 rounded border border-gray-600">
+                    </div>
+                </div>
+                <div class="mt-3 flex justify-end gap-2">
+                    <button id="cancelEditPlayerBtn" class="text-gray-300 hover:text-white px-3 py-1">Cancel</button>
+                    <button id="saveEditPlayerBtn" class="bg-green-600 hover:bg-green-500 text-white px-4 py-1 rounded font-bold">Save Changes</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Retention Modal -->
+    <div id="retentionModal" class="hidden fixed inset-0 z-30 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+        <div class="glass-effect bg-gray-900 w-full max-w-5xl p-8 rounded-2xl shadow-2xl border-2 border-fuchsia-500 transform transition-all duration-300" id="retentionModalContent">
+            <h2 id="retentionModalTitle" class="text-3xl font-bold text-center mb-2 text-fuchsia-300">Retention Phase</h2>
+            <p class="text-center text-gray-300 mb-4">Select up to 5 players to retain.</p>
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div class="md:col-span-2 flex flex-col h-[500px]">
+                     <input type="text" id="retentionSearch" class="w-full bg-gray-900/70 text-white p-3 mb-4 rounded-lg border-2 border-gray-600 focus:border-fuchsia-500 focus:ring-0 outline-none transition" placeholder="Search for a player...">
+                    <div id="retentionPlayerList" class="grid grid-cols-2 md:grid-cols-3 gap-3 overflow-y-auto pr-2 flex-1"></div>
+                </div>
+                <div class="flex flex-col h-[500px]">
+                    <h3 class="text-xl font-bold text-center mb-4 text-white">Your Retentions</h3>
+                    <div id="selectedRetentionsList" class="space-y-3 overflow-y-auto pr-2 flex-1"></div>
+                </div>
+            </div>
+            <div class="text-center mt-6">
+                <button id="confirmRetentionsBtn" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold py-3 px-8 rounded-lg text-lg transition transform hover:scale-105">Confirm Selections</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pool Modal -->
+    <div id="poolModal" class="hidden fixed inset-0 z-30 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+        <div class="glass-effect bg-gray-900 w-full max-w-2xl p-8 rounded-2xl shadow-2xl border-2 border-fuchsia-500 transform transition-all duration-300" id="poolModalContent">
+            <h2 id="poolModalTitle" class="text-3xl font-bold text-center mb-4 text-fuchsia-300">Upcoming Player Pool</h2>
+            <div class="h-px bg-gray-700 my-6"></div>
+            <div id="poolModalPlayerList" class="grid grid-cols-2 md:grid-cols-3 gap-4 max-h-64 overflow-y-auto pr-2"></div>
+            <div class="h-px bg-gray-700 my-6"></div>
+            <div class="text-center mt-6 flex justify-center gap-4 flex-wrap">
+                <button id="startUnsoldRoundBtn" class="hidden bg-lime-600 hover:bg-lime-500 text-white font-bold py-3 px-8 rounded-lg text-lg transition">Auction Unsold</button>
+                <button id="startRoundBtn" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white font-bold py-3 px-8 rounded-lg text-lg transition">Start Round</button>
+                <button id="jumpToUnsoldBtn" class="bg-orange-600 hover:bg-orange-500 text-white font-bold py-3 px-8 rounded-lg text-lg transition">Jump to Unsold</button>
+                <button id="skipToResultBtn" class="hidden bg-gray-600 hover:bg-gray-500 text-white font-bold py-3 px-8 rounded-lg text-lg transition">End Auction</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Log Modal -->
+    <div id="logModal" class="hidden fixed inset-0 z-30 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+         <div class="glass-effect bg-gray-900 w-full max-w-4xl p-8 rounded-2xl shadow-2xl border-2 border-fuchsia-500" id="logModalContent">
+            <h2 class="text-3xl font-bold text-center mb-4 text-fuchsia-300">Auction Log</h2>
+            <div class="h-96 overflow-y-auto mt-6 rounded border border-gray-700">
+                <table class="w-full text-sm text-left text-gray-300">
+                    <thead class="text-xs text-gray-300 uppercase bg-gray-800 sticky top-0">
+                        <tr>
+                            <th scope="col" class="px-6 py-3">Player Name</th>
+                            <th scope="col" class="px-6 py-3">Category</th>
+                            <th scope="col" class="px-6 py-3">Sold To</th>
+                            <th scope="col" class="px-6 py-3 text-right">Selling Price</th>
+                        </tr>
+                    </thead>
+                    <tbody id="soldPlayersLog" class="divide-y divide-gray-700"></tbody>
+                </table>
+            </div>
+            <div class="text-center mt-6">
+                <button id="closeLogBtn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg transition">Close</button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Remaining Players Modal -->
+    <div id="remainingModal" class="hidden fixed inset-0 z-30 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+         <div class="glass-effect bg-gray-900 w-full max-w-4xl p-8 rounded-2xl shadow-2xl border-2 border-fuchsia-500" id="remainingModalContent">
+             <h2 class="text-3xl font-bold text-center mb-4 text-fuchsia-300">Remaining Players by Pool</h2>
+             <div id="remainingPlayersList" class="grid grid-cols-1 md:grid-cols-2 gap-4 mt-6 pr-2" style="max-height: 500px; overflow-y: auto;"></div>
+             <div class="text-center mt-6">
+                 <button id="closeRemainingBtn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg transition">Close</button>
+            </div>
+         </div>
+    </div>
+
+    <!-- Unsold Modal -->
+    <div id="unsoldModal" class="hidden fixed inset-0 z-30 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+         <div class="glass-effect bg-gray-900 w-full max-w-4xl p-8 rounded-2xl shadow-2xl border-2 border-lime-500" id="unsoldModalContent">
+             <h2 class="text-3xl font-bold text-center mb-4 text-lime-300">Unsold Players Pool</h2>
+             <div id="unsoldPlayersList" class="h-96 overflow-y-auto mt-6 space-y-4 pr-2"></div>
+             <div class="text-center mt-6">
+                 <button id="closeUnsoldBtn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg transition">Close</button>
+            </div>
+         </div>
+    </div>
+
+    <!-- Teams Modal -->
+    <div id="teamsModal" class="hidden fixed inset-0 z-30 overflow-y-auto modal-backdrop flex items-center justify-center p-4">
+         <div class="glass-effect bg-gray-900 w-full max-w-6xl p-8 rounded-2xl shadow-2xl border-2 border-fuchsia-500" id="teamsModalContent">
+             <h2 class="text-3xl font-bold text-center mb-6 text-fuchsia-300">Team Squads</h2>
+             <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                <div id="team1Display" class="team-card glass-effect p-4 rounded-2xl shadow-lg border border-cyan-500/30"></div>
+                <div id="team2Display" class="team-card glass-effect p-4 rounded-2xl shadow-lg border border-orange-500/30"></div>
+                <div id="team3Display" class="team-card glass-effect p-4 rounded-2xl shadow-lg border border-lime-500/30"></div>
+                <div id="team4Display" class="team-card glass-effect p-4 rounded-2xl shadow-lg border border-rose-500/30"></div>
+             </div>
+             <div class="text-center mt-8">
+                 <button id="closeTeamsBtn" class="bg-gray-600 hover:bg-gray-500 text-white font-bold py-2 px-6 rounded-lg transition">Close</button>
+            </div>
+         </div>
+    </div>
+
+<script>
+// --- INITIAL PLAYER DATA ---
+const defaultPlayers = [
+    { name: "Virat Kohli", category: "Batsman", basePrice: 200, country: "India" },
+    { name: "Dewald Brevis", category: "Batsman", basePrice: 200, country: "South Africa" },
+    { name: "Jacob Bethell", category: "Batsman", basePrice: 100, country: "England" },
+    { name: "Jason Roy", category: "Batsman", basePrice: 100, country: "England" },
+    { name: "Rajat Patidar", category: "Batsman", basePrice: 100, country: "India" },
+    { name: "MS Dhoni", category: "Wicket Keeper", basePrice: 30, country: "India" },
+    { name: "Rohit Sharma", category: "Batsman", basePrice: 200, country: "India" },
+    { name: "Jasprit Bumrah", category: "Fast Bowler", basePrice: 200, country: "India" },
+    { name: "Hardik Pandya", category: "Allrounder", basePrice: 200, country: "India" },
+    { name: "Rashid Khan", category: "Spinner", basePrice: 200, country: "Afghanistan" },
+    { name: "Ben Stokes", category: "Allrounder", basePrice: 200, country: "England" },
+    { name: "Suryakumar Yadav", category: "Batsman", basePrice: 200, country: "India" },
+    { name: "Jos Buttler", category: "Wicket Keeper", basePrice: 200, country: "England" },
+    { name: "Travis Head", category: "Batsman", basePrice: 200, country: "Australia" },
+    { name: "Pat Cummins", category: "Fast Bowler", basePrice: 200, country: "Australia" },
+    { name: "Matt Henry", category: "Fast Bowler", basePrice: 100, country: "New Zealand" },
+    { name: "Mitchell Starc", category: "Fast Bowler", basePrice: 200, country: "Australia" },
+    { name: "Rishabh Pant", category: "Wicket Keeper", basePrice: 200, country: "India" },
+    { name: "Shreyas Iyer", category: "Batsman", basePrice: 200, country: "India" },
+    { name: "KL Rahul", category: "Wicket Keeper", basePrice: 200, country: "India" },
+    { name: "Ravindra Jadeja", category: "Allrounder", basePrice: 200, country: "India" },
+    { name: "Glenn Maxwell", category: "Allrounder", basePrice: 200, country: "Australia" },
+    { name: "Heinrich Klaasen", category: "Wicket Keeper", basePrice: 200, country: "South Africa" },
+    { name: "Trent Boult", category: "Fast Bowler", basePrice: 200, country: "New Zealand" },
+    { name: "Mohammed Shami", category: "Fast Bowler", basePrice: 200, country: "India" },
+    { name: "Kagiso Rabada", category: "Fast Bowler", basePrice: 200, country: "South Africa" },
+    { name: "Sunil Narine", category: "Allrounder", basePrice: 200, country: "West Indies" },
+    { name: "Andre Russell", category: "Allrounder", basePrice: 200, country: "West Indies" },
+    { name: "Yuzvendra Chahal", category: "Spinner", basePrice: 200, country: "India" },
+    { name: "Kuldeep Yadav", category: "Spinner", basePrice: 200, country: "India" },
+    { name: "Shubman Gill", category: "Batsman", basePrice: 200, country: "India" },
+    { name: "David Warner", category: "Batsman", basePrice: 200, country: "Australia" },
+    { name: "Quinton de Kock", category: "Wicket Keeper", basePrice: 200, country: "South Africa" },
+    { name: "Mohammed Siraj", category: "Fast Bowler", basePrice: 200, country: "India" },
+    { name: "Arshdeep Singh", category: "Fast Bowler", basePrice: 200, country: "India" },
+    { name: "Axar Patel", category: "Allrounder", basePrice: 200, country: "India" },
+    { name: "Wanindu Hasaranga", category: "Spinner", basePrice: 200, country: "Sri Lanka" },
+    { name: "Faf du Plessis", category: "Batsman", basePrice: 200, country: "South Africa" },
+    { name: "Jofra Archer", category: "Fast Bowler", basePrice: 200, country: "England" },
+    { name: "Mark Wood", category: "Fast Bowler", basePrice: 200, country: "England" },
+    { name: "Sam Curran", category: "Allrounder", basePrice: 200, country: "England" },
+    { name: "Liam Livingstone", category: "Allrounder", basePrice: 200, country: "England" },
+    { name: "Cameron Green", category: "Allrounder", basePrice: 200, country: "Australia" },
+    { name: "Nicholas Pooran", category: "Wicket Keeper", basePrice: 200, country: "West Indies" },
+    { name: "Ishan Kishan", category: "Wicket Keeper", basePrice: 200, country: "India" },
+    { name: "Yashasvi Jaiswal", category: "Batsman", basePrice: 200, country: "India" },
+    { name: "Ruturaj Gaikwad", category: "Batsman", basePrice: 100, country: "India" },
+    { name: "Sanju Samson", category: "Wicket Keeper", basePrice: 200, country: "India" },
+    { name: "Rinku Singh", category: "Batsman", basePrice: 200, country: "India" },
+    { name: "Tilak Varma", category: "Batsman", basePrice: 200, country: "India" },
+    { name: "Ravi Bishnoi", category: "Spinner", basePrice: 100, country: "India" },
+    { name: "Washington Sundar", category: "Allrounder", basePrice: 100, country: "India" },
+    { name: "Shivam Dube", category: "Allrounder", basePrice: 100, country: "India" },
+    { name: "Shardul Thakur", category: "Allrounder", basePrice: 100, country: "India" },
+    { name: "Deepak Chahar", category: "Fast Bowler", basePrice: 100, country: "India" },
+    { name: "T Natarajan", category: "Fast Bowler", basePrice: 100, country: "India" },
+    { name: "Bhuvneshwar Kumar", category: "Fast Bowler", basePrice: 200, country: "India" },
+    { name: "Umesh Yadav", category: "Fast Bowler", basePrice: 100, country: "India" },
+    { name: "Moeen Ali", category: "Allrounder", basePrice: 100, country: "England" },
+    { name: "Marcus Stoinis", category: "Allrounder", basePrice: 100, country: "Australia" },
+    { name: "Tim David", category: "Batsman", basePrice: 200, country: "Australia" },
+    { name: "David Miller", category: "Batsman", basePrice: 200, country: "South Africa" },
+    { name: "Aiden Markram", category: "Batsman", basePrice: 100, country: "South Africa" },
+    { name: "Marco Jansen", category: "Allrounder", basePrice: 100, country: "South Africa" },
+    { name: "Lockie Ferguson", category: "Fast Bowler", basePrice: 100, country: "New Zealand" },
+    { name: "Glenn Phillips", category: "Batsman", basePrice: 100, country: "New Zealand" },
+    { name: "Devon Conway", category: "Batsman", basePrice: 100, country: "New Zealand" },
+    { name: "Rachin Ravindra", category: "Allrounder", basePrice: 100, country: "New Zealand" },
+    { name: "Daryl Mitchell", category: "Allrounder", basePrice: 100, country: "New Zealand" },
+    { name: "Maheesh Theekshana", category: "Spinner", basePrice: 100, country: "Sri Lanka" },
+    { name: "Matheesha Pathirana", category: "Fast Bowler", basePrice: 100, country: "Sri Lanka" },
+    { name: "Jonny Bairstow", category: "Wicket Keeper", basePrice: 200, country: "England" },
+    { name: "Harry Brook", category: "Batsman", basePrice: 100, country: "England" },
+    { name: "Phil Salt", category: "Wicket Keeper", basePrice: 200, country: "England" },
+    { name: "Will Jacks", category: "Batsman", basePrice: 200, country: "England" },
+    { name: "Josh Hazlewood", category: "Fast Bowler", basePrice: 100, country: "Australia" },
+    { name: "Adam Zampa", category: "Spinner", basePrice: 100, country: "Australia" },
+    { name: "Jake Fraser-McGurk", category: "Batsman", basePrice: 30, country: "Australia" },
+    { name: "Tristan Stubbs", category: "Wicket Keeper", basePrice: 30, country: "South Africa" },
+    { name: "Azmatullah Omarzai", category: "Allrounder", basePrice: 30, country: "Afghanistan" },
+    { name: "Noor Ahmad", category: "Spinner", basePrice: 100, country: "Afghanistan" },
+    { name: "Dilshan Madushanka", category: "Fast Bowler", basePrice: 30, country: "Sri Lanka" },
+    { name: "Gerald Coetzee", category: "Fast Bowler", basePrice: 30, country: "South Africa" },
+    { name: "Nuwan Thushara", category: "Fast Bowler", basePrice: 30, country: "Sri Lanka" },
+    { name: "Rovman Powell", category: "Batsman", basePrice: 30, country: "West Indies" },
+    { name: "Shimron Hetmyer", category: "Batsman", basePrice: 30, country: "West Indies" },
+    { name: "Alzarri Joseph", category: "Fast Bowler", basePrice: 30, country: "West Indies" },
+    { name: "Shai Hope", category: "Wicket Keeper", basePrice: 30, country: "West Indies" },
+    { name: "Sherfane Rutherford", category: "Batsman", basePrice: 30, country: "West Indies" },
+    { name: "Mohammad Nabi", category: "Allrounder", basePrice: 30, country: "Afghanistan" },
+    { name: "Mujeeb Ur Rahman", category: "Spinner", basePrice: 30, country: "Afghanistan" },
+    { name: "Kane Williamson", category: "Batsman", basePrice: 200, country: "New Zealand" },
+    { name: "Steve Smith", category: "Batsman", basePrice: 200, country: "Australia" },
+    { name: "Shakib Al Hasan", category: "Allrounder", basePrice: 200, country: "Bangladesh" },
+    { name: "Mustafizur Rahman", category: "Fast Bowler", basePrice: 200, country: "Bangladesh" },
+    { name: "Rahul Tripathi", category: "Batsman", basePrice: 100, country: "India" },
+    { name: "Mayank Agarwal", category: "Batsman", basePrice: 100, country: "India" },
+    { name: "Manish Pandey", category: "Batsman", basePrice: 100, country: "India" },
+    { name: "Ajinkya Rahane", category: "Batsman", basePrice: 100, country: "India" },
+    { name: "Nitish Rana", category: "Batsman", basePrice: 100, country: "India" },
+    { name: "Venkatesh Iyer", category: "Allrounder", basePrice: 100, country: "India" },
+    { name: "Shashank Singh", category: "Batsman", basePrice: 100, country: "India" },
+    { name: "Ramandeep Singh", category: "Allrounder", basePrice: 100, country: "India" },
+    { name: "Deepak Hooda", category: "Allrounder", basePrice: 30, country: "India" },
+    { name: "Krunal Pandya", category: "Allrounder", basePrice: 200, country: "India" },
+    { name: "Rahul Chahar", category: "Spinner", basePrice: 30, country: "India" },
+    { name: "Varun Chakravarthy", category: "Spinner", basePrice: 200, country: "India" },
+    { name: "Tushar Deshpande", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Akash Madhwal", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Mukesh Kumar", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Yash Dayal", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Mohsin Khan", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Khaleel Ahmed", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Avesh Khan", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Prasidh Krishna", category: "Fast Bowler", basePrice: 200, country: "India" },
+    { name: "Umran Malik", category: "Fast Bowler", basePrice: 200, country: "India" },
+    { name: "Kuldeep Sen", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Abhishek Sharma", category: "Allrounder", basePrice: 200, country: "India" },
+    { name: "Shahrukh Khan", category: "Batsman", basePrice: 100, country: "India" },
+    { name: "Abdul Samad", category: "Batsman", basePrice: 30, country: "India" },
+    { name: "Riyan Parag", category: "Allrounder", basePrice: 100, country: "India" },
+    { name: "Ayush Badoni", category: "Batsman", basePrice: 30, country: "India" },
+    { name: "Nehal Wadhera", category: "Batsman", basePrice: 30, country: "India" },
+    { name: "Jitesh Sharma", category: "Wicket Keeper", basePrice: 100, country: "India" },
+    { name: "Dhruv Jurel", category: "Wicket Keeper", basePrice: 100, country: "India" },
+    { name: "Prabhsimran Singh", category: "Wicket Keeper", basePrice: 100, country: "India" },
+    { name: "Anuj Rawat", category: "Wicket Keeper", basePrice: 100, country: "India" },
+    { name: "Sai Sudharsan", category: "Batsman", basePrice: 30, country: "India" },
+    { name: "Devdutt Padikkal", category: "Batsman", basePrice: 30, country: "India" },
+    { name: "Prithvi Shaw", category: "Batsman", basePrice: 30, country: "India" },
+    { name: "Chetan Sakariya", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Kartik Tyagi", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Shivam Mavi", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Kamlesh Nagarkoti", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Mayank Markande", category: "Spinner", basePrice: 30, country: "India" },
+    { name: "Shreyas Gopal", category: "Spinner", basePrice: 30, country: "India" },
+    { name: "Amit Mishra", category: "Spinner", basePrice: 30, country: "India" },
+    { name: "Piyush Chawla", category: "Spinner", basePrice: 30, country: "India" },
+    { name: "Karn Sharma", category: "Spinner", basePrice: 100, country: "India" },
+    { name: "R Sai Kishore", category: "Spinner", basePrice: 100, country: "India" },
+    { name: "Suyash Sharma", category: "Spinner", basePrice: 30, country: "India" },
+    { name: "M Shahrukh Khan", category: "Batsman", basePrice: 100, country: "India" },
+    { name: "Sameer Rizvi", category: "Batsman", basePrice: 100, country: "India" },
+    { name: "Kumar Kushagra", category: "Wicket Keeper", basePrice: 30, country: "India" },
+    { name: "Robin Minz", category: "Wicket Keeper", basePrice: 30, country: "India" },
+    { name: "Angkrish Raghuvanshi", category: "Batsman", basePrice: 100, country: "India" },
+    { name: "Arjun Tendulkar", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Harshit Rana", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Mayank Yadav", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Harpreet Brar", category: "Allrounder", basePrice: 30, country: "India" },
+    { name: "Rishi Dhawan", category: "Allrounder", basePrice: 30, country: "India" },
+    { name: "Vishnu Vinod", category: "Wicket Keeper", basePrice: 30, country: "India" },
+    { name: "Harvik Desai", category: "Wicket Keeper", basePrice: 30, country: "India" },
+    { name: "Vidwath Kaverappa", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Yudvir Singh", category: "Fast Bowler", basePrice: 30, country: "India" },
+    { name: "Ninad Rathva", category: "Allrounder", basePrice: 30, country: "India" },
+    { name: "Manav Suthar", category: "Spinner", basePrice: 30, country: "India" },
+    { name: "Mitchell Marsh", category: "Allrounder", basePrice: 200, country: "Australia" },
+    { name: "Nathan Ellis", category: "Fast Bowler", basePrice: 100, country: "Australia" },
+    { name: "Spencer Johnson", category: "Fast Bowler", basePrice: 30, country: "Australia" },
+    { name: "Reece Topley", category: "Fast Bowler", basePrice: 100, country: "England" },
+    { name: "Lungi Ngidi", category: "Fast Bowler", basePrice: 100, country: "South Africa" },
+    { name: "Ashton Turner", category: "Allrounder", basePrice: 100, country: "Australia" },
+    { name: "Rilee Rossouw", category: "Batsman", basePrice: 200, country: "South Africa" },
+    { name: "Josh Inglis", category: "Wicket Keeper", basePrice: 100, country: "Australia" },
+    { name: "Rahmanullah Gurbaz", category: "Wicket Keeper", basePrice: 100, country: "Afghanistan" },
+    { name: "Finn Allen", category: "Wicket Keeper", basePrice: 100, country: "New Zealand" },
+    { name: "Jordan Cox", category: "Wicket Keeper", basePrice: 30, country: "England" },
+    { name: "Tom Banton", category: "Wicket Keeper", basePrice: 100, country: "New Zealand" },
+    { name: "AM Ghazanfar", category: "Spinner", basePrice: 100, country: "Afghanistan" }
+
+
+
+
+];
+
+let appState = {
+    settings: {
+        initialPurse: 10000,
+        timerDuration: 40,
+        theme: "fuchsia",
+        enableRetention: true,
+        enableUnsoldRound: true
+    },
+    masterPlayerList: JSON.parse(JSON.stringify(defaultPlayers)),
+    playerPools: {},
+    poolOrder: [],
+    teams: [
+        { name: "", squad: [], purse: 10000 },
+        { name: "", squad: [], purse: 10000 },
+        { name: "", squad: [], purse: 10000 },
+        { name: "", squad: [], purse: 10000 },
+    ],
+    currentPoolIndex: -1,
+    currentPlayerIndex: -1,
+    currentBid: 0,
+    highestBidder: null,
+    timerId: null,
+    timeLeft: 40,
+    timerPaused: false,
+    auctionStarted: false,
+    auctionEnded: false,
+    isUnsoldRound: false,
+    currentUnsoldRoundPlayers: [],
+    currentRetentionTeamIndex: 0,
+    tempRetainedPlayers: [],
+    highestBidRecord: {
+        amount: 0,
+        playerName: "-",
+        teamName: "-"
+    },
+    stats: {
+        totalSold: 0,
+        totalSpent: 0
+    }
+};
+
+// --- DOM ELEMENTS ---
+const setupScreen = document.getElementById('setupScreen');
+const auctionScreen = document.getElementById('auctionScreen');
+const endScreen = document.getElementById('endScreen');
+const resumeBanner = document.getElementById('resumeBanner');
+const stickyStatsBar = document.getElementById('stickyStatsBar');
+
+const playerNameEl = document.getElementById('playerName');
+const playerCategoryEl = document.getElementById('playerCategory');
+const playerCountryEl = document.getElementById('playerCountry');
+const basePriceEl = document.getElementById('basePrice');
+const currentBidEl = document.getElementById('currentBid');
+const highestBidderEl = document.getElementById('highestBidder');
+const messageBox = document.getElementById('messageBox');
+const timerDisplay = document.getElementById('timer');
+const timerRing = document.getElementById('timerRing');
+const ringCircumference = 2 * Math.PI * 56;
+
+const bidButtons = document.querySelectorAll('.bid-btn');
+const manualSellBtn = document.getElementById('manualSellBtn');
+const unsoldBtn = document.getElementById('unsoldBtn');
+const nextPlayerBtn = document.getElementById('nextPlayerBtn');
+
+const settingsModal = document.getElementById('settingsModal');
+const editPoolModal = document.getElementById('editPoolModal');
+const retentionModal = document.getElementById('retentionModal');
+const poolModal = document.getElementById('poolModal');
+const logModal = document.getElementById('logModal');
+const remainingModal = document.getElementById('remainingModal');
+const unsoldModal = document.getElementById('unsoldModal');
+const teamsModal = document.getElementById('teamsModal');
+
+// --- AUDIO HANDLING ---
+const sounds = {
+    bid: document.getElementById('audio-bid'),
+    team1: document.getElementById('audio-team1'),
+    team2: document.getElementById('audio-team2'),
+    team3: document.getElementById('audio-team3'),
+    team4: document.getElementById('audio-team4'),
+    unsold: document.getElementById('audio-unsold'),
+    crowd: document.getElementById('audio-crowd'),
+    tension: document.getElementById('audio-tension')
+};
+
+function playSound(name) {
+    try {
+        const sound = sounds[name];
+        if (sound) {
+            sound.loop = false;
+            sound.pause();
+            sound.currentTime = 0;
+            sound.volume = 0.5; // Default volume
+            // Add a small delay to prevent audio glitches
+            setTimeout(() => {
+                const playPromise = sound.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.warn(`Audio '${name}' failed to play.`);
+                    });
+                }
+            }, 50);
+        }
+    } catch (e) { console.log("Audio error", e); }
+}
+
+function startBackgroundAudio() {
+    try {
+        sounds.crowd.currentTime = 0;
+        sounds.crowd.volume = 0.05;
+        setTimeout(() => {
+            sounds.crowd.play().catch(e=>{});
+        }, 50);
+        sounds.tension.volume = 0.1;
+    } catch(e){}
+}
+
+// --- HELPER FUNCTIONS ---
+function formatPrice(lakhs) {
+    if (lakhs >= 100) {
+        const crores = Math.floor(lakhs / 100);
+        const remainingLakhs = lakhs % 100;
+        if (remainingLakhs > 0) {
+            return `${crores}.${remainingLakhs.toString().padStart(2, '0')} Cr`;
+        }
+        return `${crores} Cr`;
+    }
+    return `${lakhs} L`;
+}
+
+function updateHighestBidRecordDisplay() {
+    const amountEl = document.getElementById('recordAmount');
+    const teamEl = document.getElementById('recordTeam');
+    const playerEl = document.getElementById('recordPlayer');
+    if (!amountEl || !teamEl || !playerEl) return;
+
+    amountEl.innerText = formatPrice(appState.highestBidRecord.amount || 0);
+    teamEl.innerText = appState.highestBidRecord.teamName || '-';
+    teamEl.title = appState.highestBidRecord.teamName || '-';
+    playerEl.innerText = appState.highestBidRecord.playerName || '-';
+    playerEl.title = appState.highestBidRecord.playerName || '-';
+}
+
+function applyTheme(themeKey) {
+    const theme = themeKey || 'fuchsia';
+    document.body.classList.remove('theme-fuchsia', 'theme-ocean', 'theme-emerald', 'theme-sunset', 'theme-midnight');
+    document.body.classList.add(`theme-${theme}`);
+}
+
+function getBidIncrement(bidAmount) {
+    // New bid increment logic based on price bands
+    // From base (₹30–50 L) up to ₹1 Cr: ₹5 lakh per step
+    if (bidAmount < 100) return 5;
+    
+    // From ₹1 Cr to ₹2 Cr: ₹10 lakh per step
+    if (bidAmount < 200) return 10;
+    
+    // From ₹2 Cr to ₹5 Cr: ₹20 lakh per step
+    if (bidAmount < 500) return 20;
+    
+    // Above ₹5 Cr: ₹20 lakh per step
+    return 20;
+}
+
+// --- PERSISTENCE ---
+function saveState() {
+    try {
+        const stateToSave = { ...appState, timerId: null };
+        localStorage.setItem('cricketAuctionState', JSON.stringify(stateToSave));
+    } catch (e) { console.error("Save failed", e); }
+}
+
+function loadState() {
+    try {
+        const saved = localStorage.getItem('cricketAuctionState');
+        if (saved) {
+            const parsed = JSON.parse(saved);
+            appState = parsed;
+            if (!appState.highestBidRecord) {
+                appState.highestBidRecord = { amount: 0, playerName: "-", teamName: "-" };
+            }
+            if (!appState.settings.theme) appState.settings.theme = 'fuchsia';
+            document.getElementById('settingPurse').value = appState.settings.initialPurse;
+            document.getElementById('settingTimer').value = appState.settings.timerDuration;
+            document.getElementById('settingRetention').checked = appState.settings.enableRetention;
+            document.getElementById('settingUnsoldRound').checked = appState.settings.enableUnsoldRound;
+            document.getElementById('settingTheme').value = appState.settings.theme;
+            applyTheme(appState.settings.theme);
+            updateHighestBidRecordDisplay();
+            
+            setupScreen.classList.add('hidden');
+            
+            if (appState.auctionEnded) {
+                endAuction();
+            } else if (appState.auctionStarted) {
+                auctionScreen.classList.remove('hidden');
+                updateAllTeamDisplays();
+                updateSoldPlayersTable();
+                updateStickyStats();
+                
+                document.getElementById('bidTeam1').innerHTML = `<span class="text-sm opacity-70">BID</span><span class="font-bold">${appState.teams[0].name}</span><span class="text-xs mt-1 bg-black/30 px-2 rounded-full shortcut-hint hidden md:inline">Key 1</span>`;
+                document.getElementById('bidTeam2').innerHTML = `<span class="text-sm opacity-70">BID</span><span class="font-bold">${appState.teams[1].name}</span><span class="text-xs mt-1 bg-black/30 px-2 rounded-full shortcut-hint hidden md:inline">Key 2</span>`;
+                document.getElementById('bidTeam3').innerHTML = `<span class="text-sm opacity-70">BID</span><span class="font-bold">${appState.teams[2].name}</span><span class="text-xs mt-1 bg-black/30 px-2 rounded-full shortcut-hint hidden md:inline">Key 3</span>`;
+                document.getElementById('bidTeam4').innerHTML = `<span class="text-sm opacity-70">BID</span><span class="font-bold">${appState.teams[3].name}</span><span class="text-xs mt-1 bg-black/30 px-2 rounded-full shortcut-hint hidden md:inline">Key 4</span>`;
+
+                const player = getCurrentPlayer();
+                if (player) {
+                    displayPlayer(player);
+                    if (appState.highestBidder !== null) {
+                          const team = appState.teams[appState.highestBidder];
+                          document.querySelectorAll('.team-card').forEach((c,i) => c.classList.toggle('highest-bidder-team-card', i === appState.highestBidder));
+                          manualSellBtn.disabled = false;
+                          manualSellBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                          unsoldBtn.classList.add('hidden');
+                          startTimer(); 
+                    } else {
+                        startTimer();
+                    }
+                } else {
+                    showNextPoolModal();
+                }
+            } else {
+                setupScreen.classList.add('hidden');
+                startRetentionPhase(true);
+            }
+        }
+    } catch (e) {
+        console.error("Load failed", e);
+        alert("Failed to load save file. Resetting.");
+        resetAuction();
+    }
+}
+
+function resetAuction() {
+    localStorage.removeItem('cricketAuctionState');
+    location.reload();
+}
+
+// --- CORE LOGIC ---
+function initializePlayers() {
+    const pools = {};
+    appState.masterPlayerList.forEach((player, index) => {
+        const p = { ...player, id: index, status: 'unsold', soldTo: null, sellingPrice: 0 };
+        const key = `${p.category}-${p.basePrice}`;
+        if (!pools[key]) pools[key] = [];
+        pools[key].push(p);
+    });
+    appState.playerPools = pools;
+    
+    const order = [];
+    const categories = ['Batsman', 'Wicket Keeper', 'Allrounder', 'Fast Bowler', 'Spinner'];
+    const prices = [200, 100, 30, 30, 30];
+    
+    prices.forEach(price => {
+        categories.forEach(cat => {
+            const key = `${cat}-${price}`;
+            if (pools[key] && pools[key].length > 0) order.push(key);
+        });
+    });
+    
+    appState.poolOrder = order;
+}
+
+function renderTeamDisplay(index) {
+    const team = appState.teams[index];
+    const displayEl = document.getElementById(`team${index + 1}Display`);
+    const colors = ['cyan', 'orange', 'lime', 'rose'];
+    const color = colors[index];
+    
+    let listHtml = team.squad.slice().reverse().map((p, rIdx) => {
+        const originalIdx = team.squad.length - 1 - rIdx;
+        return `
+        <div class="flex justify-between items-center bg-gray-800/30 p-2 rounded mb-1 border-l-2 border-${color}-500 group hover:bg-gray-800/50 transition">
+            <div class="truncate mr-2 flex-1">
+                <p class="text-xs font-bold text-gray-200">${p.name}</p>
+                <p class="text-[10px] text-gray-300 uppercase">${p.category}</p>
+            </div>
+            <div class="text-right flex items-center gap-2">
+                <div>
+                    <p class="text-xs font-bold text-fuchsia-300">${formatPrice(p.sellingPrice)}</p>
+                    ${p.status === 'retained' ? '<span class="text-[10px] text-lime-300">Retained</span>' : ''}
+                </div>
+                <button class="remove-player-btn bg-red-600 hover:bg-red-500 text-white px-2 py-1 rounded text-[10px] font-bold opacity-0 group-hover:opacity-100 transition" data-team="${index}" data-player-idx="${originalIdx}" title="Remove from team">✕</button>
+            </div>
+        </div>
+    `}).join('');
+
+    if(team.squad.length === 0) listHtml = `<p class="text-center text-gray-500 text-sm italic mt-4">No players yet</p>`;
+
+    displayEl.innerHTML = `
+        <div class="flex justify-between items-end mb-2 border-b border-gray-600 pb-2">
+            <div>
+                <h3 class="text-xl font-bold text-${color}-300">${team.name}</h3>
+                <p class="text-xs text-gray-300">Squad: ${team.squad.length}/25</p>
+            </div>
+            <div class="text-right">
+                 <p class="text-xs text-gray-300">Purse</p>
+                 <p class="text-xl font-bold text-white">${formatPrice(team.purse)}</p>
+            </div>
+        </div>
+        <div class="h-48 overflow-y-auto pr-1 custom-scrollbar">${listHtml}</div>
+    `;
+    displayEl.classList.remove('hidden');
+    
+    // Add event listeners for remove buttons
+    displayEl.querySelectorAll('.remove-player-btn').forEach(btn => {
+        btn.addEventListener('click', () => removePlayerFromTeam(parseInt(btn.dataset.team), parseInt(btn.dataset.playerIdx)));
+    });
+}
+
+function removePlayerFromTeam(teamIndex, playerIndex) {
+    const team = appState.teams[teamIndex];
+    const player = team.squad[playerIndex];
+    
+    if (!player) return;
+    
+    // Confirm removal
+    if (!confirm(`Remove ${player.name} from ${team.name}?\nThey will return to the auction pool.`)) return;
+    
+    // Remove from team and return purse
+    team.squad.splice(playerIndex, 1);
+    team.purse += player.sellingPrice;
+    
+    // Reset player status and return to pool
+    player.status = 'unsold';
+    player.soldTo = null;
+    
+    // Add back to player pool if not already there
+    const key = `${player.category}-${player.basePrice}`;
+    if (!appState.playerPools[key]) {
+        appState.playerPools[key] = [];
+    }
+    if (!appState.playerPools[key].find(p => p.id === player.id)) {
+        appState.playerPools[key].push(player);
+    }
+    
+    // Update stats
+    appState.stats.totalSold--;
+    appState.stats.totalSpent -= player.sellingPrice;
+    
+    // Save and refresh
+    saveState();
+    updateAllTeamDisplays();
+    updateSoldPlayersTable();
+    
+    messageBox.innerHTML = `<span class="text-orange-400">✓ ${player.name} removed from ${team.name}</span>`;
+}
+
+function updateAllTeamDisplays() {
+    appState.teams.forEach((_, i) => renderTeamDisplay(i));
+    updateStickyStats();
+    updatePurseDashboard();
+}
+
+function updateStickyStats() {
+    stickyStatsBar.classList.remove('hidden');
+    document.getElementById('statSoldPlayers').innerText = appState.stats.totalSold;
+    document.getElementById('statTotalSpent').innerText = formatPrice(appState.stats.totalSpent);
+    
+    if(appState.isUnsoldRound) {
+        document.getElementById('statCurrentRound').innerText = "Round: Unsold Pool";
+    } else if (appState.currentPoolIndex >= 0 && appState.currentPoolIndex < appState.poolOrder.length) {
+        document.getElementById('statCurrentRound').innerText = `Round: ${appState.poolOrder[appState.currentPoolIndex].replace('-', ' ')}L`;
+    }
+}
+
+function startAuction() {
+    const t1 = document.getElementById('team1Name').value || "Team 1";
+    const t2 = document.getElementById('team2Name').value || "Team 2";
+    const t3 = document.getElementById('team3Name').value || "Team 3";
+    const t4 = document.getElementById('team4Name').value || "Team 4";
+    
+    appState.teams[0].name = t1;
+    appState.teams[1].name = t2;
+    appState.teams[2].name = t3;
+    appState.teams[3].name = t4;
+    
+    const purse = parseInt(document.getElementById('settingPurse').value);
+    appState.teams.forEach(t => t.purse = purse);
+    
+    initializePlayers();
+
+    appState.highestBidRecord = { amount: 0, playerName: "-", teamName: "-" };
+    updateHighestBidRecordDisplay();
+    
+    setupScreen.classList.add('hidden');
+    
+    document.getElementById('bidTeam1').innerHTML = `<span class="text-sm opacity-70">BID</span><span class="font-bold">${t1}</span><span class="text-xs mt-1 bg-black/30 px-2 rounded-full shortcut-hint hidden md:inline">Key 1</span>`;
+    document.getElementById('bidTeam2').innerHTML = `<span class="text-sm opacity-70">BID</span><span class="font-bold">${t2}</span><span class="text-xs mt-1 bg-black/30 px-2 rounded-full shortcut-hint hidden md:inline">Key 2</span>`;
+    document.getElementById('bidTeam3').innerHTML = `<span class="text-sm opacity-70">BID</span><span class="font-bold">${t3}</span><span class="text-xs mt-1 bg-black/30 px-2 rounded-full shortcut-hint hidden md:inline">Key 3</span>`;
+    document.getElementById('bidTeam4').innerHTML = `<span class="text-sm opacity-70">BID</span><span class="font-bold">${t4}</span><span class="text-xs mt-1 bg-black/30 px-2 rounded-full shortcut-hint hidden md:inline">Key 4</span>`;
+
+    if (appState.settings.enableRetention) {
+        startRetentionPhase();
+    } else {
+        appState.auctionStarted = true;
+        updateAllTeamDisplays();
+        showNextPoolModal();
+    }
+    saveState();
+    startBackgroundAudio();
+}
+
+// --- RETENTION PHASE ---
+function startRetentionPhase(resuming = false) {
+    if(!resuming) appState.currentRetentionTeamIndex = 0;
+    setupRetentionModal(appState.currentRetentionTeamIndex);
+    retentionModal.classList.remove('hidden');
+}
+
+function setupRetentionModal(teamIdx) {
+    appState.tempRetainedPlayers = [];
+    const totalTeams = appState.teams.length;
+    const currentTeamNum = teamIdx + 1;
+    document.getElementById('retentionModalTitle').innerText = `Retention Phase (${currentTeamNum}/${totalTeams}): ${appState.teams[teamIdx].name}`;
+    updateRetentionList();
+    updateSelectedRetentions();
+}
+
+function updateRetentionList() {
+    const container = document.getElementById('retentionPlayerList');
+    const searchTerm = document.getElementById('retentionSearch').value.toLowerCase();
+    
+    const allPlayers = Object.values(appState.playerPools).flat().filter(p => p.status === 'unsold');
+    const filtered = allPlayers.filter(p => p.name.toLowerCase().includes(searchTerm)).sort((a,b)=> a.name.localeCompare(b.name));
+    
+    container.innerHTML = filtered.slice(0, 100).map(p => `
+        <div class="player-retainable bg-gray-800 p-2 rounded cursor-pointer border border-transparent hover:border-gray-500 flex justify-between items-center" onclick="toggleRetention(${p.id})">
+            <div>
+                <p class="font-bold text-xs">${p.name}</p>
+                <p class="text-[10px] text-gray-300">${p.category}</p>
+            </div>
+            <div class="text-fuchsia-300 text-xs font-bold">${formatPrice(p.basePrice)}</div>
+        </div>
+    `).join('');
+    
+    Array.from(container.children).forEach(child => {
+        const pid = parseInt(child.getAttribute('onclick').match(/\d+/)[0]);
+        if (appState.tempRetainedPlayers.find(tp => tp.id === pid)) {
+            child.classList.add('selected');
+        }
+    });
+}
+
+function toggleRetention(pid) {
+    const all = Object.values(appState.playerPools).flat();
+    const player = all.find(p => p.id === pid);
+    
+    const idx = appState.tempRetainedPlayers.findIndex(p => p.id === pid);
+    if (idx > -1) {
+        appState.tempRetainedPlayers.splice(idx, 1);
+    } else {
+        if (appState.tempRetainedPlayers.length < 5) {
+            appState.tempRetainedPlayers.push(player);
+        }
+    }
+    updateRetentionList();
+    updateSelectedRetentions();
+}
+
+function updateSelectedRetentions() {
+    const list = document.getElementById('selectedRetentionsList');
+    const costs = [1500, 1200, 900, 600, 300]; 
+    
+    list.innerHTML = appState.tempRetainedPlayers.map((p, i) => `
+        <div class="bg-fuchsia-900/30 border border-fuchsia-500 p-2 rounded flex justify-between">
+            <div><p class="font-bold">${p.name}</p><p class="text-xs text-gray-300">Deduction</p></div>
+            <div class="font-bold text-xl text-white">${formatPrice(costs[i])}</div>
+        </div>
+    `).join('');
+}
+
+document.getElementById('confirmRetentionsBtn').addEventListener('click', () => {
+    const team = appState.teams[appState.currentRetentionTeamIndex];
+    const costs = [1500, 1200, 900, 600, 300];
+    
+    appState.tempRetainedPlayers.forEach((p, i) => {
+        p.status = 'retained';
+        p.soldTo = team.name;
+        p.sellingPrice = costs[i];
+        team.squad.push(p);
+        team.purse -= costs[i];
+        appState.stats.totalSold++;
+        appState.stats.totalSpent += costs[i];
+        
+        const key = `${p.category}-${p.basePrice}`;
+        appState.playerPools[key] = appState.playerPools[key].filter(x => x.id !== p.id);
+    });
+    
+    appState.currentRetentionTeamIndex++;
+    if (appState.currentRetentionTeamIndex < appState.teams.length) {
+        setupRetentionModal(appState.currentRetentionTeamIndex);
+    } else {
+        retentionModal.classList.add('hidden');
+        appState.auctionStarted = true;
+        updateAllTeamDisplays();
+        saveState();
+        showNextPoolModal();
+    }
+});
+
+document.getElementById('retentionSearch').addEventListener('input', updateRetentionList);
+
+
+// --- AUCTION ROUND LOGIC ---
+function showNextPoolModal() {
+    if (appState.isUnsoldRound) {
+        appState.isUnsoldRound = false; 
+    } else {
+        appState.currentPoolIndex++;
+    }
+    
+    if (appState.currentPoolIndex >= appState.poolOrder.length) {
+        const unsold = Object.values(appState.playerPools).flat().filter(p => p.status === 'passed-over');
+        
+        if (appState.settings.enableUnsoldRound && unsold.length > 0) {
+             document.getElementById('poolModalTitle').innerText = "Final Chance: Unsold Players";
+             document.getElementById('poolModalPlayerList').innerHTML = `<p class="col-span-full text-center text-gray-300">Remaining unsold players will be auctioned one last time.</p>`;
+             document.getElementById('startRoundBtn').classList.add('hidden');
+             document.getElementById('startUnsoldRoundBtn').classList.remove('hidden');
+             document.getElementById('skipToResultBtn').classList.remove('hidden');
+             poolModal.classList.remove('hidden');
+        } else {
+            endAuction();
+        }
+        return;
+    }
+    
+    const key = appState.poolOrder[appState.currentPoolIndex];
+    const players = appState.playerPools[key];
+    
+    // Group players by category to show in respective pools
+    const groupedByCategory = {};
+    players.forEach(p => {
+        if (!groupedByCategory[p.category]) groupedByCategory[p.category] = [];
+        groupedByCategory[p.category].push(p);
+    });
+    
+    let poolHtml = '';
+    Object.entries(groupedByCategory).forEach(([category, cats]) => {
+        poolHtml += `<div class="col-span-full"><p class="text-xs font-bold text-fuchsia-300 mb-2 uppercase">${category}</p></div>`;
+        poolHtml += cats.map(p => `
+            <div class="bg-gray-700/60 hover:bg-gray-700 p-3 rounded text-center border border-gray-600 transition">
+                <p class="font-bold text-sm text-white">${p.name}</p>
+                <p class="text-xs text-gray-300">${p.country}</p>
+            </div>
+        `).join('');
+    });
+    
+    document.getElementById('poolModalTitle').innerText = `Pool: ${key.split('-')[0]} (${key.split('-')[1]}L)`;
+    document.getElementById('poolModalPlayerList').innerHTML = poolHtml;
+    
+    document.getElementById('startRoundBtn').classList.remove('hidden');
+    document.getElementById('startUnsoldRoundBtn').classList.add('hidden');
+    document.getElementById('skipToResultBtn').classList.add('hidden');
+    poolModal.classList.remove('hidden');
+    saveState();
+}
+
+function startRound() {
+    poolModal.classList.add('hidden');
+    auctionScreen.classList.remove('hidden');
+    appState.currentPlayerIndex = -1;
+    updatePurseDashboard();
+    nextPlayer();
+}
+
+function startUnsoldRound() {
+    appState.isUnsoldRound = true;
+    const passed = Object.values(appState.playerPools).flat().filter(p => p.status === 'passed-over');
+    passed.forEach(p => p.status = 'unsold');
+    appState.currentUnsoldRoundPlayers = passed.sort(() => 0.5 - Math.random()); 
+    poolModal.classList.add('hidden');
+    auctionScreen.classList.remove('hidden');
+    appState.currentPlayerIndex = -1;
+    updatePurseDashboard();
+    nextPlayer();
+}
+
+function getCurrentPlayer() {
+    if (appState.isUnsoldRound) return appState.currentUnsoldRoundPlayers[appState.currentPlayerIndex];
+    const key = appState.poolOrder[appState.currentPoolIndex];
+    return appState.playerPools[key][appState.currentPlayerIndex];
+}
+
+function nextPlayer() {
+    appState.currentPlayerIndex++;
+    const player = getCurrentPlayer();
+    
+    if (!player) {
+        showNextPoolModal();
+        return;
+    }
+    
+    appState.highestBidder = null;
+    appState.currentBid = player.basePrice;
+    displayPlayer(player);
+    updateControls(true);
+    
+    document.querySelectorAll('.team-card').forEach(c => c.classList.remove('highest-bidder-team-card'));
+    
+    startTimer();
+    saveState();
+}
+
+function displayPlayer(player) {
+    const stamp = document.getElementById('soldStamp');
+    stamp.classList.add('hidden');
+    stamp.classList.remove('animate');
+
+    playerNameEl.innerText = player.name;
+    playerCategoryEl.innerText = player.category;
+    playerCountryEl.innerText = player.country;
+    basePriceEl.innerText = formatPrice(player.basePrice);
+    currentBidEl.innerText = formatPrice(appState.currentBid);
+    highestBidderEl.innerText = "None";
+    messageBox.innerText = "";
+}
+
+function updateControls(isNewPlayer) {
+    bidButtons.forEach(btn => {
+        const tid = parseInt(btn.dataset.team);
+        const team = appState.teams[tid];
+        btn.disabled = team.squad.length >= 25 || team.purse < appState.currentBid;
+        if (team.purse < appState.currentBid) btn.classList.add('opacity-30', 'cursor-not-allowed');
+        else btn.classList.remove('opacity-30', 'cursor-not-allowed');
+    });
+    
+    if (isNewPlayer) {
+        manualSellBtn.disabled = true;
+        manualSellBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        unsoldBtn.classList.remove('hidden');
+        nextPlayerBtn.classList.add('hidden');
+        unsoldBtn.classList.remove('col-span-2');
+    }
+}
+
+function startTimer() {
+    clearInterval(appState.timerId);
+    sounds.tension.pause();
+    sounds.tension.currentTime = 0;
+    if (sounds.unsold) {
+        sounds.unsold.pause();
+        sounds.unsold.currentTime = 0;
+    }
+    appState.timeLeft = appState.settings.timerDuration;
+    appState.timerPaused = false;
+    timerDisplay.innerText = appState.timeLeft;
+    timerRing.style.strokeDasharray = ringCircumference;
+    timerRing.style.strokeDashoffset = 0;
+    
+    // Update pause button
+    const pauseBtn = document.getElementById('pauseTimerBtn');
+    const pauseBtnText = document.getElementById('pauseBtnText');
+    const pauseBtnIcon = pauseBtn.querySelector('span:first-child');
+    if (pauseBtn) {
+        pauseBtnIcon.innerText = '⏸';
+        pauseBtnText.innerText = 'Pause';
+        pauseBtn.classList.remove('bg-green-600', 'hover:bg-green-500');
+        pauseBtn.classList.add('bg-red-600', 'hover:bg-red-500');
+    }
+    
+    appState.timerId = setInterval(() => {
+        if (appState.timerPaused) return;
+        
+        appState.timeLeft--;
+        
+        // Prevent negative timer
+        if (appState.timeLeft < 0) {
+            appState.timeLeft = 0;
+        }
+        
+        timerDisplay.innerText = appState.timeLeft;
+        const offset = ringCircumference - (appState.timeLeft / appState.settings.timerDuration) * ringCircumference;
+        timerRing.style.strokeDashoffset = offset;
+        
+        // Play tension sound when timer goes below 10 seconds
+        if (appState.timeLeft < 10 && appState.timeLeft > 0) {
+            if (sounds.tension.paused) {
+                sounds.tension.currentTime = 0;
+                sounds.tension.play().catch(e=>{});
+            }
+        }
+
+        if (appState.timeLeft <= 0) {
+            clearInterval(appState.timerId);
+            sounds.tension.pause();
+            sounds.tension.currentTime = 0;
+            // Verify highestBidder is valid (not just non-null)
+            if (appState.highestBidder !== null && appState.highestBidder >= 0 && appState.highestBidder < appState.teams.length) {
+                sellPlayer();
+            } else {
+                markUnsold();
+            }
+        }
+    }, 1000);
+}
+
+function bid(teamIdx) {
+    if (!appState.auctionStarted || appState.auctionEnded) return;
+    if (!nextPlayerBtn.classList.contains('hidden')) return; 
+
+    const team = appState.teams[teamIdx];
+    if (team.squad.length >= 25) {
+        messageBox.innerHTML = `<span class="text-red-300">Squad Full!</span>`;
+        return;
+    }
+    if (teamIdx === appState.highestBidder) return;
+    
+    const inc = appState.highestBidder === null ? 0 : getBidIncrement(appState.currentBid);
+    const newBid = appState.currentBid + inc;
+    
+    if (team.purse < newBid) {
+        messageBox.innerHTML = `<span class="text-orange-300">Not enough purse!</span>`;
+        return;
+    }
+    
+    appState.currentBid = newBid;
+    appState.highestBidder = teamIdx;
+    
+    currentBidEl.innerText = formatPrice(appState.currentBid);
+    highestBidderEl.innerText = team.name;
+    
+    document.querySelectorAll('.team-card').forEach((c, i) => {
+        c.classList.toggle('highest-bidder-team-card', i === teamIdx);
+    });
+    
+    manualSellBtn.disabled = false;
+    manualSellBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    unsoldBtn.classList.add('hidden');
+    messageBox.innerText = "";
+    
+    // Fix sound priority - don't overlap with tension
+    sounds.tension.pause();
+    sounds.tension.currentTime = 0;
+    playSound('bid');
+    startTimer(); 
+}
+
+bidButtons.forEach(btn => btn.addEventListener('click', () => {
+    const teamIdx = parseInt(btn.dataset.team);
+    
+    // Add click animation
+    btn.classList.add('bid-clicked');
+    setTimeout(() => btn.classList.remove('bid-clicked'), 300);
+    
+    bid(teamIdx);
+}));
+
+function sellPlayer() {
+    clearInterval(appState.timerId);
+    appState.timerId = null;
+    sounds.tension.pause();
+    sounds.tension.currentTime = 0;
+    
+    const player = getCurrentPlayer();
+    const team = appState.teams[appState.highestBidder];
+    
+    player.status = 'sold';
+    player.soldTo = team.name;
+    player.sellingPrice = appState.currentBid;
+    
+    team.squad.push(player);
+    team.purse -= player.sellingPrice;
+    
+    appState.stats.totalSold++;
+    appState.stats.totalSpent += player.sellingPrice;
+
+    if (player.sellingPrice > appState.highestBidRecord.amount) {
+        appState.highestBidRecord.amount = player.sellingPrice;
+        appState.highestBidRecord.playerName = player.name;
+        appState.highestBidRecord.teamName = team.name;
+        updateHighestBidRecordDisplay();
+    }
+    
+    messageBox.innerHTML = `
+        <div class="flex items-center gap-2 text-fuchsia-300 animate-pulse">
+            <span class="text-3xl">🔨</span> 
+            <span class="text-2xl">SOLD to ${team.name}!</span>
+        </div>`;
+    
+    const stamp = document.getElementById('soldStamp');
+    stamp.innerText = "SOLD";
+    stamp.style.color = "#ef4444"; 
+    stamp.style.borderColor = "#ef4444";
+    stamp.classList.remove('hidden');
+    void stamp.offsetWidth; 
+    stamp.classList.add('animate');
+
+    // Fix sound delay by ensuring proper sequence - play team-specific audio
+    const teamAudioMap = {
+        0: 'team1',
+        1: 'team2',
+        2: 'team3',
+        3: 'team4'
+    };
+    const teamAudioName = teamAudioMap[appState.highestBidder];
+    playSound(teamAudioName);
+    setTimeout(() => {
+        sounds.crowd.currentTime = 0;
+        sounds.crowd.play().catch(e=>{});
+    }, 200);
+    
+    updateAllTeamDisplays();
+    updateSoldPlayersTable();
+    updateStickyStats();
+    
+    bidButtons.forEach(b => b.disabled = true);
+    manualSellBtn.disabled = true;
+    manualSellBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    unsoldBtn.classList.add('hidden');
+    nextPlayerBtn.classList.remove('hidden');
+    nextPlayerBtn.classList.add('col-span-2');
+    saveState();
+}
+
+function markUnsold() {
+    clearInterval(appState.timerId);
+    appState.timerId = null;
+    sounds.tension.pause();
+    sounds.tension.currentTime = 0;
+    
+    // Stop any team sounds that might be playing
+    ['team1', 'team2', 'team3', 'team4'].forEach(teamSound => {
+        if (sounds[teamSound]) {
+            sounds[teamSound].pause();
+            sounds[teamSound].currentTime = 0;
+        }
+    });
+    
+    const player = getCurrentPlayer();
+    if (!player || player.status === 'passed-over') return;
+    player.status = 'passed-over';
+    
+    messageBox.innerHTML = `<span class="text-gray-300 text-2xl font-bold">UNSOLD</span>`;
+    
+    const stamp = document.getElementById('soldStamp');
+    stamp.innerText = "UNSOLD";
+    stamp.style.color = "#9ca3af"; 
+    stamp.style.borderColor = "#9ca3af";
+    stamp.classList.remove('hidden');
+    void stamp.offsetWidth;
+    stamp.classList.add('animate');
+
+    playSound('unsold');
+    
+    bidButtons.forEach(b => b.disabled = true);
+    manualSellBtn.disabled = true;
+    manualSellBtn.classList.add('opacity-50', 'cursor-not-allowed');
+    unsoldBtn.classList.add('hidden');
+    nextPlayerBtn.classList.remove('hidden');
+    nextPlayerBtn.classList.add('col-span-2');
+    saveState();
+}
+
+manualSellBtn.addEventListener('click', sellPlayer);
+unsoldBtn.addEventListener('click', markUnsold);
+nextPlayerBtn.addEventListener('click', nextPlayer);
+document.getElementById('skipToResultBtn').addEventListener('click', endAuction);
+
+function endAuction() {
+    appState.auctionEnded = true;
+    auctionScreen.classList.add('hidden');
+    poolModal.classList.add('hidden');
+    stickyStatsBar.classList.add('hidden');
+    endScreen.classList.remove('hidden');
+    
+    const container = document.getElementById('finalSquads');
+    container.innerHTML = appState.teams.map((team, i) => `
+        <div class="bg-gray-800 p-4 rounded-lg border border-gray-700">
+            <h3 class="text-xl font-bold text-white mb-2 border-b border-gray-600 pb-2">${team.name}</h3>
+            <div class="flex justify-between text-sm mb-4">
+                 <span class="text-gray-300">Players: ${team.squad.length}</span>
+                 <span class="text-green-300">Left: ${formatPrice(team.purse)}</span>
+            </div>
+            <div class="h-64 overflow-y-auto pr-2 space-y-1">
+                ${team.squad.map(p => `<div class="flex justify-between text-xs text-gray-300"><span>${p.name}</span><span>${formatPrice(p.sellingPrice)}</span></div>`).join('')}
+            </div>
+        </div>
+    `).join('');
+    localStorage.removeItem('cricketAuctionState');
+}
+
+// --- SETTINGS ---
+document.getElementById('settingsBtn').addEventListener('click', () => {
+    // Show purse controls only during auction
+    const auctionPurseControls = document.getElementById('auctionPurseControls');
+    if (appState.auctionStarted && !appState.auctionEnded) {
+        auctionPurseControls.classList.remove('hidden');
+    } else {
+        auctionPurseControls.classList.add('hidden');
+    }
+    settingsModal.classList.remove('hidden');
+});
+
+document.getElementById('closeSettingsBtn').addEventListener('click', () => {
+    appState.settings.initialPurse = parseInt(document.getElementById('settingPurse').value);
+    appState.settings.timerDuration = parseInt(document.getElementById('settingTimer').value);
+    appState.settings.theme = document.getElementById('settingTheme').value;
+    appState.settings.enableRetention = document.getElementById('settingRetention').checked;
+    appState.settings.enableUnsoldRound = document.getElementById('settingUnsoldRound').checked;
+    settingsModal.classList.add('hidden');
+    applyTheme(appState.settings.theme);
+    saveState();
+});
+
+document.getElementById('settingTimer').addEventListener('input', (e) => document.getElementById('timerValueDisplay').innerText = e.target.value);
+document.getElementById('settingTheme').addEventListener('change', (e) => applyTheme(e.target.value));
+
+// Purse Management During Auction
+document.getElementById('addPurseAllTeamsBtn').addEventListener('click', () => {
+    const amount = parseInt(document.getElementById('teamPurseAmount').value) || 0;
+    if (amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    appState.teams.forEach(t => t.purse += amount);
+    updateAllTeamDisplays();
+    alert(`Added ₹${formatPrice(amount)} to all teams!`);
+});
+
+document.getElementById('addPurseTeam1Btn').addEventListener('click', () => {
+    const amount = parseInt(document.getElementById('teamPurseAmount').value) || 0;
+    if (amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    appState.teams[0].purse += amount;
+    updateAllTeamDisplays();
+    alert(`Added ₹${formatPrice(amount)} to ${appState.teams[0].name}!`);
+});
+
+document.getElementById('addPurseTeam2Btn').addEventListener('click', () => {
+    const amount = parseInt(document.getElementById('teamPurseAmount').value) || 0;
+    if (amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    appState.teams[1].purse += amount;
+    updateAllTeamDisplays();
+    alert(`Added ₹${formatPrice(amount)} to ${appState.teams[1].name}!`);
+});
+
+document.getElementById('addPurseTeam3Btn').addEventListener('click', () => {
+    const amount = parseInt(document.getElementById('teamPurseAmount').value) || 0;
+    if (amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    appState.teams[2].purse += amount;
+    updateAllTeamDisplays();
+    alert(`Added ₹${formatPrice(amount)} to ${appState.teams[2].name}!`);
+});
+
+document.getElementById('addPurseTeam4Btn').addEventListener('click', () => {
+    const amount = parseInt(document.getElementById('teamPurseAmount').value) || 0;
+    if (amount <= 0) {
+        alert('Please enter a valid amount');
+        return;
+    }
+    appState.teams[3].purse += amount;
+    updateAllTeamDisplays();
+    alert(`Added ₹${formatPrice(amount)} to ${appState.teams[3].name}!`);
+});
+
+// --- EDIT POOL ---
+document.getElementById('managePoolBtn').addEventListener('click', () => {
+    editPoolModal.classList.remove('hidden');
+    renderEditList();
+});
+document.getElementById('closeEditPoolBtn').addEventListener('click', () => editPoolModal.classList.add('hidden'));
+document.getElementById('cancelEditPlayerBtn').addEventListener('click', () => document.getElementById('playerEditorForm').classList.add('hidden'));
+
+let editingPlayerIndex = null;
+
+function renderEditList() {
+    const search = document.getElementById('editSearch').value.toLowerCase();
+    const container = document.getElementById('editPlayerListContainer');
+    
+    container.innerHTML = appState.masterPlayerList
+        .map((p, i) => ({...p, originalIndex: i}))
+        .filter(p => p.name.toLowerCase().includes(search))
+        .map(p => `
+            <div class="flex justify-between items-center p-2 hover:bg-gray-800 border-b border-gray-700 cursor-pointer" onclick="openEditor(${p.originalIndex})">
+                <div>${p.name}</div>
+                <div class="text-xs text-gray-300">${p.category} - ${p.basePrice}L</div>
+            </div>
+        `).join('');
+}
+
+function openEditor(idx) {
+    editingPlayerIndex = idx;
+    const p = appState.masterPlayerList[idx];
+    document.getElementById('editorPlayerName').innerText = `Edit: ${p.name}`;
+    document.getElementById('editorCategory').value = p.category;
+    document.getElementById('editorBasePrice').value = p.basePrice;
+    document.getElementById('playerEditorForm').classList.remove('hidden');
+}
+
+document.getElementById('saveEditPlayerBtn').addEventListener('click', () => {
+    if(editingPlayerIndex !== null) {
+        const p = appState.masterPlayerList[editingPlayerIndex];
+        p.category = document.getElementById('editorCategory').value;
+        p.basePrice = parseInt(document.getElementById('editorBasePrice').value);
+        document.getElementById('playerEditorForm').classList.add('hidden');
+        renderEditList();
+    }
+});
+
+document.getElementById('editSearch').addEventListener('input', renderEditList);
+
+// --- UTILS & LOGGING ---
+function updateSoldPlayersTable() {
+    const tbody = document.getElementById('soldPlayersLog');
+    const all = Object.values(appState.playerPools).flat().filter(p => p.status === 'sold' || p.status === 'retained');
+    all.sort((a,b) => b.sellingPrice - a.sellingPrice);
+    
+    tbody.innerHTML = all.map(p => `
+        <tr class="bg-gray-800 border-b border-gray-700 hover:bg-gray-700">
+            <th scope="row" class="px-6 py-3 font-medium whitespace-nowrap text-white">${p.name} ${p.status==='retained'?'(R)':''}</th>
+            <td class="px-6 py-3">${p.category}</td>
+            <td class="px-6 py-3">${p.soldTo}</td>
+            <td class="px-6 py-3 text-right font-bold text-fuchsia-300">${formatPrice(p.sellingPrice)}</td>
+        </tr>
+    `).join('');
+}
+
+document.getElementById('showLogBtn').addEventListener('click', () => logModal.classList.remove('hidden'));
+document.getElementById('closeLogBtn').addEventListener('click', () => logModal.classList.add('hidden'));
+document.getElementById('showRemainingBtn').addEventListener('click', () => {
+    const list = document.getElementById('remainingPlayersList');
+    const rem = Object.values(appState.playerPools).flat().filter(p => p.status === 'unsold');
+    
+    // Group remaining players by pool
+    const poolGroups = {};
+    appState.poolOrder.forEach(poolKey => {
+        const poolPlayers = rem.filter(p => `${p.category}-${p.basePrice}` === poolKey);
+        if (poolPlayers.length > 0) {
+            poolGroups[poolKey] = poolPlayers;
+        }
+    });
+    
+    // Generate HTML with pool groupings
+    let poolHtml = '';
+    Object.entries(poolGroups).forEach(([poolKey, players]) => {
+        const [category, basePrice] = poolKey.split('-');
+        poolHtml += `
+            <div class="bg-gray-800/50 rounded-lg border border-fuchsia-500/30 p-4">
+                <div class="flex justify-between items-center mb-3">
+                    <h3 class="text-sm font-bold text-fuchsia-300 uppercase">${category} (${basePrice}L)</h3>
+                    <button onclick="jumpToPool('${poolKey}')" class="bg-fuchsia-600 hover:bg-fuchsia-500 text-white text-xs font-bold py-1 px-3 rounded transition">
+                        Jump to Pool
+                    </button>
+                </div>
+                <div class="space-y-2">
+                    ${players.map(p => `
+                        <div class="bg-gray-900/70 p-2 rounded border-l-2 border-fuchsia-400 text-sm">
+                            <div class="flex justify-between items-start">
+                                <span class="text-gray-100 font-semibold">${p.name}</span>
+                                <span class="text-xs text-gray-400">${p.country}</span>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            </div>
+        `;
+    });
+    
+    if (poolHtml === '') {
+        poolHtml = '<p class="col-span-full text-center text-gray-400 text-lg">No remaining players</p>';
+    }
+    
+    list.innerHTML = poolHtml;
+    remainingModal.classList.remove('hidden');
+});
+document.getElementById('closeRemainingBtn').addEventListener('click', () => remainingModal.classList.add('hidden'));
+
+// Jump to specific pool from remaining players
+function jumpToPool(poolKey) {
+    const poolIndex = appState.poolOrder.indexOf(poolKey);
+    if (poolIndex === -1) {
+        alert('Pool not found!');
+        return;
+    }
+    
+    // Check if we're already past this pool
+    if (poolIndex < appState.currentPoolIndex) {
+        if (!confirm(`This pool has already been auctioned. Jump back to it? (Current progress will continue from this pool)`)) {
+            return;
+        }
+    }
+    
+    // Close the modal
+    remainingModal.classList.add('hidden');
+    
+    // Set to the pool before target (showNextPoolModal will increment)
+    appState.currentPoolIndex = poolIndex - 1;
+    appState.currentPlayerIndex = -1;
+    
+    // Show the pool modal for the target pool
+    showNextPoolModal();
+}
+
+document.getElementById('showUnsoldBtn').addEventListener('click', () => {
+    const list = document.getElementById('unsoldPlayersList');
+    const uns = Object.values(appState.playerPools).flat().filter(p => p.status === 'passed-over');
+    list.innerHTML = uns.map(p => `<div class="bg-gray-800 p-2 rounded mb-1 flex justify-between"><span>${p.name}</span><span class="text-xs text-gray-300">${p.category} - ${formatPrice(p.basePrice)}</span></div>`).join('');
+    unsoldModal.classList.remove('hidden');
+});
+document.getElementById('closeUnsoldBtn').addEventListener('click', () => unsoldModal.classList.add('hidden'));
+
+// Teams Tab
+document.getElementById('showTeamsBtn').addEventListener('click', () => {
+    updateAllTeamDisplays();
+    teamsModal.classList.remove('hidden');
+});
+document.getElementById('closeTeamsBtn').addEventListener('click', () => teamsModal.classList.add('hidden'));
+
+// Update purse dashboard
+function updatePurseDashboard() {
+    appState.teams.forEach((team, i) => {
+        const el = document.getElementById(`purseTeam${i+1}Info`);
+        if (el) {
+            // Update purse (second paragraph)
+            const purseEl = el.querySelector('p:nth-of-type(2)');
+            if (purseEl) purseEl.innerText = formatPrice(team.purse);
+            
+            // Update player count (span in last paragraph)
+            const playerCountSpan = el.querySelector('span');
+            if (playerCountSpan) playerCountSpan.innerText = team.squad.length;
+        }
+    });
+}
+
+document.getElementById('resetAuctionBtn').addEventListener('click', () => {
+    if(confirm("Are you sure? This will wipe all data.")) resetAuction();
+});
+
+// --- PAUSE TIMER BUTTON ---
+document.getElementById('pauseTimerBtn').addEventListener('click', togglePauseTimer);
+
+function togglePauseTimer() {
+    if (!appState.auctionStarted || appState.auctionEnded) return;
+    if (!nextPlayerBtn.classList.contains('hidden')) return; // Can't pause when showing next player button
+    
+    appState.timerPaused = !appState.timerPaused;
+    const pauseBtn = document.getElementById('pauseTimerBtn');
+    const pauseBtnText = document.getElementById('pauseBtnText');
+    const pauseBtnIcon = pauseBtn.querySelector('span:first-child');
+    
+    if (appState.timerPaused) {
+        // Paused state
+        pauseBtnIcon.innerText = '▶';
+        pauseBtnText.innerText = 'Resume';
+        pauseBtn.classList.remove('bg-red-600', 'hover:bg-red-500');
+        pauseBtn.classList.add('bg-green-600', 'hover:bg-green-500');
+        sounds.tension.pause();
+        messageBox.innerHTML = '<div class="bg-fuchsia-600/15 border border-fuchsia-500/40 rounded-lg px-4 py-1.5 inline-flex items-center gap-2"><span class="text-xl">⏸</span><span class="text-fuchsia-200 font-bold text-base tracking-wide uppercase">Auction Paused</span></div>';
+    } else {
+        // Resumed state
+        pauseBtnIcon.innerText = '⏸';
+        pauseBtnText.innerText = 'Pause';
+        pauseBtn.classList.remove('bg-green-600', 'hover:bg-green-500');
+        pauseBtn.classList.add('bg-red-600', 'hover:bg-red-500');
+        messageBox.innerText = '';
+        // Resume tension sound if timer is below 10
+        if (appState.timeLeft < 10 && appState.timeLeft > 0) {
+            sounds.tension.play().catch(e=>{});
+        }
+    }
+}
+
+// --- KEYBOARD SHORTCUTS ---
+document.addEventListener('keydown', (e) => {
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') return;
+    const key = e.key.toUpperCase();
+    if (!settingsModal.classList.contains('hidden')) return;
+    if (key === '1') bid(0);
+    if (key === '2') bid(1);
+    if (key === '3') bid(2);
+    if (key === '4') bid(3);
+    if (key === 'N' && !nextPlayerBtn.classList.contains('hidden')) nextPlayer();
+    if (key === 'S' && !manualSellBtn.classList.contains('hidden')) sellPlayer();
+    if (e.code === 'Space') {
+        e.preventDefault();
+        togglePauseTimer();
+    }
+});
+
+// --- DATA IMPORT/EXPORT LOGIC ---
+
+// 1. EXPORT EXCEL (CSV)
+document.getElementById('exportCsvBtn').addEventListener('click', () => {
+    const now = new Date().toLocaleString();
+    let csvContent = "data:text/csv;charset=utf-8,";
+    
+    // Title Row
+    csvContent += "AUCTION SIMULATOR REPORT\n";
+    csvContent += `Generated on: ${now}\n\n`;
+
+    // Group by Teams
+    appState.teams.forEach(team => {
+        csvContent += `TEAM: ${team.name}\n`;
+        csvContent += `Purse Remaining:,${team.purse} Lakhs\n`;
+        csvContent += `Total Players:,${team.squad.length}\n`;
+        csvContent += "Player Name,Category,Role,Selling Price (Lakhs),Status\n"; // Headers
+
+        if(team.squad.length === 0) {
+             csvContent += "No players bought yet.,,,,\n";
+        } else {
+            team.squad.forEach(p => {
+                const status = p.status === 'retained' ? 'Retained' : 'Sold';
+                csvContent += `${p.name},${p.category},${p.country},${p.sellingPrice},${status}\n`;
+            });
+        }
+        csvContent += "\n"; // Spacer
+    });
+
+    // Unsold Section
+    const unsold = Object.values(appState.playerPools).flat().filter(p => p.status === 'passed-over');
+    if(unsold.length > 0) {
+        csvContent += "UNSOLD PLAYERS\n";
+        csvContent += "Player Name,Category,Role,Base Price (Lakhs)\n";
+        unsold.forEach(p => {
+             csvContent += `${p.name},${p.category},${p.country},${p.basePrice}\n`;
+        });
+    }
+
+    // Footer
+    csvContent += `\nEnd of Report -- Generated on ${now}`;
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "auction_report.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+});
+
+// 2. EXPORT PDF
+document.getElementById('exportPdfBtn').addEventListener('click', () => {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    const now = new Date().toLocaleString();
+
+    doc.setFontSize(30);
+    doc.text("Auction Simulator Report", 14, 30);
+    
+    doc.setFontSize(10);
+    doc.setTextColor(100);
+    doc.text(`Generated on: ${now}`, 14, 28);
+
+    let currentY = 35;
+
+    appState.teams.forEach((team, idx) => {
+        // Team Header
+        doc.setFillColor(230, 230, 230);
+        doc.rect(14, currentY, 182, 8, 'F');
+        doc.setFontSize(12);
+        doc.setTextColor(0);
+        doc.setFont(undefined, 'bold');
+        doc.text(`${team.name} (Spent: ${formatPrice(10000 - team.purse)} / Rem: ${formatPrice(team.purse)})`, 16, currentY + 6);
+        
+        currentY += 10;
+
+        const tableData = team.squad.map(p => [
+            p.name,
+            p.category,
+            p.country,
+            p.sellingPrice + " L",
+            p.status === 'retained' ? 'Retained' : 'Auction'
+        ]);
+
+        if (tableData.length === 0) {
+            doc.setFont(undefined, 'normal');
+            doc.setFontSize(10);
+            doc.text("No players purchased yet.", 16, currentY);
+            currentY += 10;
+        } else {
+            doc.autoTable({
+                startY: currentY,
+                head: [['Player Name', 'Category', 'Country', 'Price', 'Type']],
+                body: tableData,
+                theme: 'grid',
+                headStyles: { fillColor: [55, 65, 81], textColor: 255 },
+                margin: { left: 14, right: 14 },
+                didDrawPage: function(data) {
+                    // Resets currentY if page breaks happen automatically
+                    currentY = data.cursor.y + 10;
+                }
+            });
+            // Update Y after table
+            currentY = doc.lastAutoTable.finalY + 10;
+        }
+    });
+
+    // Footer
+    const pageCount = doc.internal.getNumberOfPages();
+    for(let i = 1; i <= pageCount; i++) {
+        doc.setPage(i);
+        doc.setFontSize(8);
+        doc.setTextColor(150);
+        doc.text(`Generated via Auction Simulator by Umar - ${now} - Page ${i} of ${pageCount}`, 105, 290, { align: 'center' });
+    }
+
+    doc.save("auction_report.pdf");
+});
+
+// 3. BACKUP DATA (JSON)
+document.getElementById('exportDataBtn').addEventListener('click', () => {
+    const dataStr = JSON.stringify(appState.masterPlayerList, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+    const exportFileDefaultName = 'auction_player_db.json';
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+});
+
+// 4. Trigger File Input (Import)
+document.getElementById('importDataBtn').addEventListener('click', () => {
+    document.getElementById('importFileInput').click();
+});
+
+// 5. Handle Import
+document.getElementById('importFileInput').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    if (!file) return;
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        try {
+            const importedPlayers = JSON.parse(e.target.result);
+            if (!Array.isArray(importedPlayers) || !importedPlayers[0].name || !importedPlayers[0].category) {
+                throw new Error("Invalid JSON structure");
+            }
+            if(confirm(`Loaded ${importedPlayers.length} players. This will RESET the current auction. Continue?`)) {
+                appState.masterPlayerList = importedPlayers;
+                resetAuction(); 
+                localStorage.setItem('cricketAuctionState', JSON.stringify({
+                    ...appState,
+                    masterPlayerList: importedPlayers,
+                    auctionStarted: false,
+                    teams: [
+                        { name: "", squad: [], purse: 10000 },
+                        { name: "", squad: [], purse: 10000 },
+                        { name: "", squad: [], purse: 10000 },
+                    ]
+                }));
+                location.reload();
+            }
+        } catch (error) {
+            alert("Error importing file: " + error.message);
+        }
+    };
+    reader.readAsText(file);
+    event.target.value = ''; 
+});
+
+
+// --- INIT ---
+window.onload = () => {
+    document.getElementById('startAuctionBtn').addEventListener('click', startAuction);
+    document.getElementById('startRoundBtn').addEventListener('click', startRound);
+    document.getElementById('startUnsoldRoundBtn').addEventListener('click', startUnsoldRound);
+    applyTheme(appState.settings.theme || 'fuchsia');
+    
+    // Jump to Unsold Players Pool
+    document.getElementById('jumpToUnsoldBtn').addEventListener('click', () => {
+        const unsold = Object.values(appState.playerPools).flat().filter(p => p.status === 'passed-over');
+        
+        if (unsold.length === 0) {
+            alert('No unsold players available!');
+            return;
+        }
+        
+        appState.currentPoolIndex = appState.poolOrder.length; // Jump past all pools
+        appState.isUnsoldRound = true;
+        appState.currentPlayerIndex = 0;
+        appState.currentBid = 0;
+        appState.highestBidder = null;
+        
+        // Update pool modal to show unsold players
+        document.getElementById('poolModalTitle').innerText = "Final Chance: Unsold Players";
+        document.getElementById('poolModalPlayerList').innerHTML = unsold.map(p => `
+            <div class="bg-gray-700/60 hover:bg-gray-700 p-3 rounded text-center border border-gray-600 transition">
+                <p class="font-bold text-sm text-white">${p.name}</p>
+                <p class="text-xs text-gray-300">${p.category} - ${formatPrice(p.basePrice)}</p>
+            </div>
+        `).join('');
+        
+        document.getElementById('startRoundBtn').innerText = 'Start Unsold Auction';
+        document.getElementById('startRoundBtn').classList.remove('hidden');
+        document.getElementById('startUnsoldRoundBtn').classList.add('hidden');
+        document.getElementById('skipToResultBtn').classList.add('hidden');
+        document.getElementById('jumpToUnsoldBtn').classList.add('hidden');
+        poolModal.classList.remove('hidden');
+    });
+    
+    if (localStorage.getItem('cricketAuctionState')) {
+        resumeBanner.classList.remove('hidden');
+    }
+    
+    document.getElementById('resumeBtn').addEventListener('click', () => {
+        resumeBanner.classList.add('hidden');
+        loadState();
+        playSound('bid'); 
+    });
+    
+    document.getElementById('dismissResumeBtn').addEventListener('click', () => {
+        resumeBanner.classList.add('hidden');
+        resetAuction();
+    });
+
+    updateHighestBidRecordDisplay();
+};
+</script>
+</body>
+</html>
