@@ -116,7 +116,7 @@ Double-click it to open in Chrome, Firefox, Edge, or Safari.
 
 Option 2: Clone Repository
 
-git clone [https://github.com/your-username/cricket-auction-simulator.git](https://github.com/your-username/cricket-auction-simulator.git)
+git clone [https://github.com/your-username/cricket-auction-simulator.git](https://github.com/umarmahtab/Cricket-Action-Simulator-V3.git)
 cd cricket-auction-simulator
 
 Open main.html in your browser
