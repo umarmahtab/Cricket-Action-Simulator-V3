@@ -1,175 +1,283 @@
-<div align="center">
-
-### 🏏 Cricket Auction Simulator
-</div>
-
-Experience the High-Stakes Thrill of a T20 Auction
-
-Build your dream squad. Outbid your rivals. Manage your purse.
-
-Report Bug • Request Feature
-
-
-
-## 📖 About The Project
-
-Cricket Auction Simulator is a feature-packed, single-page web application designed to recreate the intensity of a professional cricket player auction. Built entirely with Vanilla JavaScript and styled with Tailwind CSS, it offers a seamless, lag-free experience right in your browser.
-
-Whether you are hosting a fun event with friends or just testing your management skills against the computer, this simulator handles all the calculations, timers, and logic for you.
-
-## 📸 Screenshots
+# <div align="center">🏏 Cricket Auction Simulator</div>
 
 <div align="center">
-  
-### Main Dashboard
 
-<div align="center">
-<img src="./assets/MainDashboard.png" alt="Main Dashboard" width="90%" />
-</div>
+### Experience the High-Stakes Thrill of a Professional T20 Auction
 
-<br />
+Build your dream squad • Outbid your rivals • Manage your purse • Dominate the auction
 
-### Setup & Teams
+[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Open-success?style=for-the-badge)](https://cricketauctionsimulator.netlify.app/)
+[![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge\&logo=github)](https://github.com/umarmahtab/Cricket-Action-Simulator-V3.git)
 
-<div align="center">
-<img src="./assets/TeamScreen.png" alt="Team Setup" width="45%" />
-<img src="./assets/Setting.png" alt="Settings Panel" width="45%" />
-</div>
-
-<br />
-
-### Game Phases
-
-<div align="center">
-<img src="./assets/RetentionPhase.png" alt="Retention Phase" width="45%" />
-<img src="./assets/UpcomingPool.png" alt="Upcoming Player Pool" width="45%" />
-</div>
-
-<br />
-
-### Auction Action
-
-<div align="center">
-<img src="./assets/Bid.png" alt="Live Bidding" width="45%" />
-<img src="./assets/AuctionLog.png" alt="Auction Log" width="45%" />
-</div>
-
-<br />
-
-### Management
-
-<div align="center">
-<img src="./assets/PlayerDatabase.png" alt="Player Database" width="90%" />
-</div>
+**Report Bug • Request Feature**
 
 </div>
 
-## ✨ Key Features
+---
 
-🎮 Gameplay
+> [!IMPORTANT]
+>
+> ## This is the latest version of Cricket Auction Simulator.
+>
+> Looking for the previous version?
+>
+> **Legacy Repository (V1):**
+> https://github.com/umarmahtab/YOUR-OLD-REPOSITORY
+>
+> This version includes a redesigned interface, improved auction flow, enhanced performance, better team management, new customization options, and numerous quality-of-life improvements over the original release.
 
-Real-time Bidding: Intense 60-second timer per player with dynamic bid increments.
+---
 
-Three-Team System: Manage bids for 3 distinct franchises simultaneously.
+# 📖 About
 
-Retention Phase: Select up to 5 core players before the auction starts (with automatic purse deductions).
+Cricket Auction Simulator is a modern browser-based cricket auction simulator inspired by professional T20 league auctions.
 
-Unsold Re-Auction: A second chance to buy players who went unsold in the first round.
+The application recreates the excitement of a live player auction where you can strategically bid, manage franchise budgets, retain star players, and build balanced squads while competing against other teams.
 
-⚙️ Customization & Controls
+Designed using **Vanilla JavaScript**, **HTML5**, **CSS3**, and **Tailwind CSS**, the simulator delivers a fast, responsive, and immersive experience directly in your browser without requiring any installation.
 
-Settings Panel: Configure Starting Purse, Timer Duration, and Toggle Game Phases.
+---
 
-Player Database Editor: Edit player names, base prices, and categories directly within the app.
+# ✨ Features
 
-Keyboard Shortcuts:
+## 🏏 Auction Gameplay
 
-1, 2, 3 : Bid for Team 1, 2, or 3.
+* Live player bidding system
+* Real-time countdown timer
+* Intelligent bid increment logic
+* Three-franchise auction support
+* Player retention phase
+* Automatic purse deduction
+* Unsold player re-auction
+* Live auction logs
+* Smart winner detection
 
-N : Next Player.
+---
 
-S : Sell Player.
+## 👥 Team Management
 
-📊 Dashboard & Analytics
+* Team squad overview
+* Remaining purse tracker
+* Category-wise player lists
+* Sold player history
+* Team statistics
+* Auction summary
 
-Sticky Stats Bar: Always-on display of Total Spent, Players Sold, and Current Round.
+---
 
-Detailed Logs: View a history of every sold player and price.
+## ⚙️ Customization
 
-Squad Views: Visual breakdown of every team's current squad and remaining budget.
+* Adjustable auction timer
+* Custom starting purse
+* Toggle retention phase
+* Built-in player database editor
+* Easy auction configuration
 
-💾 Persistence
+---
 
-Auto-Save: Never lose your progress. The app saves to localStorage automatically.
+## 📊 Analytics
 
-Resume Session: One-click resume if you accidentally close the tab.
+* Sticky statistics bar
+* Total money spent
+* Players sold
+* Remaining players
+* Live auction progress
+* Team-wise statistics
 
-## 🚀 Getting Started
+---
 
-This project requires no installation, no servers, and no build steps.
+## 💾 Data Management
 
-Option 1: Direct Download
+* Automatic Local Storage save
+* Resume previous auction
+* Persistent settings
+* Continue where you left off
 
-Download the main.html file.
+---
 
-Double-click it to open in Chrome, Firefox, Edge, or Safari.
+# 🚀 Version 2 (Currently in Development)
 
-Option 2: Clone Repository
+The next major update is currently under active development and testing.
 
-git clone [https://github.com/umarmahtab/Cricket-Action-Simulator-V3.git]
+### Planned Features
+
+* 🌐 Online Multiplayer Auctions
+* 🎨 Multiple UI Themes
+* 📄 Export Auction as PDF
+* 📊 Export Auction as Excel
+* 📁 Save & Load Auctions (JSON)
+* ☁️ Cloud Save Support
+* 📱 Better Mobile Experience
+* 🎭 Improved Animations
+* 🔊 Enhanced Sound Effects
+* ⚡ Performance Optimizations
+
+---
+
+# 📸 Screenshots
+
+<table>
+<tr>
+<td><img src="./assets/MainDashboard.png" width="420"></td>
+<td><img src="./assets/TeamScreen.png" width="420"></td>
+</tr>
+
+<tr>
+<td><img src="./assets/Setting.png" width="420"></td>
+<td><img src="./assets/RetentionPhase.png" width="420"></td>
+</tr>
+
+<tr>
+<td><img src="./assets/UpcomingPool.png" width="420"></td>
+<td><img src="./assets/Bid.png" width="420"></td>
+</tr>
+
+<tr>
+<td><img src="./assets/AuctionLog.png" width="420"></td>
+<td><img src="./assets/PlayerDatabase.png" width="420"></td>
+</tr>
+</table>
+
+---
+
+# ⌨️ Keyboard Shortcuts
+
+| Key   | Action              |
+| ----- | ------------------- |
+| **1** | Bid for Team 1      |
+| **2** | Bid for Team 2      |
+| **3** | Bid for Team 3      |
+| **N** | Next Player         |
+| **S** | Sell Current Player |
+
+---
+
+# 🚀 Getting Started
+
+### Clone the Repository
+
+```bash
+git clone https://github.com/umarmahtab/cricket-auction-simulator.git
+```
+
+### Open the Project
+
+```bash
 cd cricket-auction-simulator
+```
 
-Open main.html in your browser
+Simply open:
 
+```text
+index.html
+```
 
-## 🔊 Adding Sound Effects (Optional)
+using any modern browser.
 
-For the best immersive experience, create a folder named sounds next to your index.html and add these files:
+No installation, package managers, or build tools are required.
 
+---
+
+# 🔊 Optional Sound Effects
+
+Create a folder named:
+
+```text
+sounds/
+```
+
+and add:
+
+```text
 bid.wav
-
 sold.wav
-
 unsold.wav
-
 tension.wav
-
 crowd-loop.mp3
+```
 
-(The app works perfectly without sounds, but they add to the atmosphere!)
+The simulator works perfectly without these files, but adding them creates a much more immersive auction atmosphere.
 
-## 🔮 Roadmap
+---
 
-[ ] Mock Draft Mode (Snake draft style)
+# 🛠️ Built With
 
-[ ] Complex Squad Rules (Max overseas players, Min uncapped players)
+* HTML5
+* CSS3
+* Vanilla JavaScript (ES6)
+* Tailwind CSS
+* Local Storage API
 
-[ ] Expanded Database (Import/Export CSV support)
+---
 
-[ ] Team Branding (Upload custom logos)
+# 🗺️ Roadmap
 
-[ ] Animations (Confetti on big signings, gavel animations)
+* ✅ Real-Time Auction Engine
+* ✅ Three-Team Auction System
+* ✅ Player Retention
+* ✅ Auction Logs
+* ✅ Local Save System
+* ✅ Player Database Editor
+* ⏳ Online Multiplayer
+* ⏳ PDF Export
+* ⏳ Excel Export
+* ⏳ JSON Save & Load
+* ⏳ Multiple Themes
+* ⏳ Cloud Save
+* ⏳ Team Logos
+* ⏳ Mobile Optimizations
 
-## 🛠️ Built With
+---
 
-🤝 Contributing
+# 🤝 Contributing
 
-Contributions are what make the open-source community such an amazing place to learn, inspire, and create. Any contributions you make are greatly appreciated.
+Contributions, feature requests, ideas, and bug reports are always welcome.
 
-Fork the Project
+If you'd like to contribute:
 
-Create a Feature Branch (git checkout -b feature/AmazingFeature)
+1. Fork the repository
+2. Create your feature branch
 
-Commit your Changes (git commit -m 'Add some AmazingFeature')
+```bash
+git checkout -b feature/AmazingFeature
+```
 
-Push to the Branch (git push origin feature/AmazingFeature)
+3. Commit your changes
 
-Open a Pull Request
+```bash
+git commit -m "Add AmazingFeature"
+```
 
-## 📝 License
+4. Push to your branch
 
-Distributed under the MIT License. See LICENSE for more information.
+```bash
+git push origin feature/AmazingFeature
+```
+
+5. Open a Pull Request
+
+---
+
+# 📄 Disclaimer
+
+This project is an independent fan-made cricket auction simulator created for educational and entertainment purposes.
+
+It is **not affiliated with, endorsed by, or associated with the IPL, BCCI, or any official cricket organization**. Team names, player names, and auction mechanics are used solely to simulate a realistic auction experience.
+
+---
+
+# 👨‍💻 Author
+
+**Umar Mahtab**
+
+GitHub: https://github.com/umarmahtab
+
+---
 
 <div align="center">
-<p>Created with ❤️ by <a href="https://github.com/umarmahtab">Umar Mahtab</a></p>
+
+### ⭐ If you enjoyed this project, consider giving it a Star!
+
+Made with ❤️ by **Umar Mahtab**
+
 </div>
