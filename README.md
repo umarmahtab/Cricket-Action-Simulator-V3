@@ -6,7 +6,7 @@
 
 Build your dream squad • Outbid your rivals • Manage your purse • Dominate the auction
 
-[![Live Demo](https://img.shields.io/badge/🌐_Live_Demo-Open-success?style=for-the-badge)](https://cricketauctionsimulator.netlify.app/)
+[![New Verison Live](https://img.shields.io/badge/🌐_Live_Demo-Open-success?style=for-the-badge)](https://boundaryclubgame.vercel.app/)
 [![GitHub](https://img.shields.io/badge/GitHub-Repository-black?style=for-the-badge\&logo=github)](https://github.com/umarmahtab/Cricket-Action-Simulator-V3.git)
 
 **Report Bug • Request Feature**
